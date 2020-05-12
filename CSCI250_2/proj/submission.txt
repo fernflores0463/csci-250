@@ -1,0 +1,39 @@
+Copying files...done
+
+ON-TIME submission of project1
+Creating Makefile
+make forestfire.out
+/home/fac/wrc/bin/rasm -l forestfire.asm > forestfire.lst
+/home/fac/wrc/bin/rasm -l initialize.asm > initialize.lst
+/home/fac/wrc/bin/rasm -l logic.asm > logic.lst
+/home/fac/wrc/bin/rlink -m -o forestfire.out forestfire.obj initialize.obj logic.obj > forestfire.map
+**********************************************
+
+Running 31 tests - please wait
+
+**********************************************
+
+===== Test 1
+/home/fac/wrc/bin/rsim forestfire.out < input.1 > OUT.1
+Your output is correct!
+
+===== Test 3
+/home/fac/wrc/bin/rsim forestfire.out < input.3 > OUT.3
+Your output is correct!
+
+===== Test 5
+/home/fac/wrc/bin/rsim forestfire.out < input.5 > OUT.5
+Your output is correct!
+
+===== Test 6
+/home/fac/wrc/bin/rsim forestfire.out < input.6 > OUT.6
+Your output is correct!
+
+===== Test 8
+/home/fac/wrc/bin/rsim forestfire.out < input.8 > OUT.8
+Your output is correct!
+
+Files being saved:
+forestfire.asm initialize.asm logic.asm
+
+project1 has been submitted.

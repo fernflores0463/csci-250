@@ -1,0 +1,73 @@
+Load map
+========
+
+Module:  connect4.obj
+ Text segment:  1040 bytes, load point 0x00400000
+ Data segment:  928 bytes, load point 0x10000000
+ Symbols:
+                  Name Section Mode    Value
+             p1_prompt   Data   R   0x1000005c
+           place_piece   Text   R   0x00400170
+            game_board   Data   R   0x100000dc
+             game_done   Text   R   0x00400048
+               p1_quit   Data   R   0x1000037b
+                  play   Text   R   0x00400020
+       check_down_vert   Text   R   0x00400318
+          ret_to_input   Text   R   0x004001c8
+          ask_p1_input   Text   R   0x0040004c
+      place_piece_cont   Text   R   0x004001ac
+             print_exc   Text   R   0x004003d0
+            skip_print   Text   R   0x00400148
+      check_left_d_pos   Text   R   0x00400298
+           set_p1_char   Text   R   0x004003c8
+         check_hor_pos   Text   R   0x00400358
+           welcome_msg   Data   R   0x10000000
+               P2_CHAR          A   0x0000004f
+           increment_2   Text   R   0x00400270
+      check_left_d_neg   Text   R   0x004002b0
+  check_right_diagonal   Text   R   0x004002c8
+         check_hor_neg   Text   R   0x00400370
+          ask_p2_input   Text   R   0x004000e0
+             exit_prog   Text   R   0x00400408
+         check_up_vert   Text   R   0x00400330
+            p1_win_msg   Text   R   0x004003a8
+                p2_win   Data   R   0x1000036a
+            check_full   Text   R   0x0040024c
+           illegal_col   Data   R   0x100002fe
+            print_full   Text   R   0x00400278
+               go_back   Text   R   0x00400204
+               p2_quit   Data   R   0x1000038a
+                   end   Text   R   0x004003c4
+          check_if_win   Text   R   0x00400208
+           tie_message   Data   R   0x10000341
+       set_player_char   Text   R   0x0040019c
+             p2_prompt   Data   R   0x1000009c
+             increment   Text   R   0x004001dc
+          PRINT_STRING          A   0x00000004
+          print_string   Text   R   0x004003dc
+                  main   Text   RG  0x00400000
+   check_left_diagonal   Text   R   0x00400288
+        check_vertical   Text   R   0x00400308
+       rest_and_ret_p1   Text   R   0x004000cc
+       rest_and_ret_p2   Text   R   0x0040015c
+            user_input   Data   R   0x10000058
+     check_right_d_pos   Text   R   0x004002d8
+            SPACE_CHAR          A   0x00000020
+          skip_print_2   Text   R   0x004000b8
+     check_right_d_neg   Text   R   0x004002f0
+             print_win   Text   R   0x00400388
+              col_full   Data   R   0x10000315
+               NEWLINE          A   0x0000000a
+               exit_p1   Text   R   0x004003e8
+               exit_p2   Text   R   0x004003f8
+                p1_win   Data   R   0x10000359
+               P1_CHAR          A   0x00000058
+            illegal_cl   Text   R   0x00400090
+      check_horizontal   Text   R   0x00400348
+
+Module:  r2k_startup.obj
+ Text segment:  36 bytes, load point 0x00400410
+ Symbols:
+                  Name Section Mode    Value
+             SYS_EXIT2          A   0x00000011
+        __r2k__entry__   Text   RG  0x00400414

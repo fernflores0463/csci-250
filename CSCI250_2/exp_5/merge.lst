@@ -1,0 +1,169 @@
+   1 0000               #
+   2 0000               # FILE:         $File$
+   3 0000               # AUTHOR:       Phil White, RIT 2016
+   4 0000               #               
+   5 0000               # CONTRIBUTORS:
+   6 0000               #		Fernando Flores-Hernandez
+   7 0000               #
+   8 0000               # DESCRIPTION:
+   9 0000               #	This file contains the merge function of mergesort
+  10 0000               #
+  11 0000               
+  12 0000               #-------------------------------
+  13 0000               
+  14 0000               #
+  15 0000               # Numeric Constants
+  16 0000               #
+  17 0000               
+  18 0000               PRINT_STRING = 4
+  19 0000               PRINT_INT = 1
+  20 0000               
+  21 0000               
+  22 0000               #***** BEGIN STUDENT CODE BLOCK 2 ***************************
+  23 0000               
+  24 0000               
+  25 0000               #
+  26 0000               # Make sure to add any .globl that you need here
+  27 0000               #
+  28 0000               .globl merge
+  29 0000               
+  30 0000               #
+  31 0000               # Name:         merge
+  32 0000               # Description:  takes two individually sorted areas of an array and
+  33 0000               #		merges them into a single sorted area
+  34 0000               #
+  35 0000               #		The two areas are defined between (inclusive)
+  36 0000               #		area1:	low   - mid
+  37 0000               #		area2:	mid+1 - high
+  38 0000               #
+  39 0000               #		Note that the area will be contiguous in the array
+  40 0000               #
+  41 0000               # Arguments:    a0:     a parameter block containing 3 values
+  42 0000               #			- the address of the array to sort
+  43 0000               #			- the address of the scrap array needed by merge
+  44 0000               #			- the address of the compare function to use
+  45 0000               #			  when ordering data
+  46 0000               #               a1:     the index of the first element of the area
+  47 0000               #               a2:     the index of the last element of the area
+  48 0000               #               a3:     the index of the middle element of the area
+  49 0000               # Returns:      none
+  50 0000               # Destroys:     t0,t1
+  51 0000               #
+  52 0000               merge:
+  53 0000               
+  54 0000 00C54022	        sub     $t0, $a2, $a1           # Handles the trivial case of 0
+  55 0004 11000040	        beq     $t0, $zero, ret
+  56 0008               
+  57 0008 23BDFFE4	        addi    $sp, $sp, -28           # Store necessary stuff to stack
+  58 000c AFBF0000	        sw      $ra, 0($sp)
+  59 0010 AFB00004	        sw      $s0, 4($sp)
+  60 0014 AFB10008	        sw      $s1, 8($sp)
+  61 0018 AFB2000C	        sw      $s2, 12($sp)
+  62 001c AFB30010	        sw      $s3, 16($sp)
+  63 0020               
+  64 0020 8C900000	        lw      $s0, 0($a0)      # s0 = addr of the array
+  65 0024 8C910004	        lw      $s1, 4($a0)      # s1 = addr of the scrap array
+  66 0028 8C920008	        lw      $s2, 8($a0)      # s2 = addr of the compare fn
+  67 002c               
+  68 002c 21080004	        addi    $t0, 4           # Multiplier for array
+  69 0030               
+  70 0030 00E09821	        move    $s3, $a3         # move index of middle element to s3
+  71 0034 02680018	        mul     $s3, $s3, $t0    # s3 = 4 * s3
+     0038 00009812
+  72 003c 02709820	        add     $s3, $s3, $s0
+  73 0040               
+  74 0040 00C0A021	        move    $s4, $a2         # move index of last element to s4
+  75 0044 02880018	        mul     $s4, $s4, $t0
+     0048 0000A012
+  76 004c 0290A020	        add     $s4, $s4, $s0
+  77 0050               
+  78 0050 00A0A821	        move    $s5, $a1        # move index of first element
+  79 0054 02A80018	        mul     $s5, $s5, $t0
+     0058 0000A812
+  80 005c 02B0A820	        add     $s5, $s5, $s0
+  81 0060               
+  82 0060 20F60001	        addi    $s6, $a3, 1
+  83 0064 02D6B020	        add     $s6, $s6, $s6
+  84 0068 02D6B020	        add     $s6, $s6, $s6
+  85 006c 02D0B020	        add     $s6, $s6, $s0
+  86 0070               
+  87 0070 AFB10014	        sw      $s1, 20($sp)            # Store the addr of scrap array
+  88 0074 AFB50018	        sw      $s5, 24($sp)            # Store FIRST AREA START for later
+  89 0078               
+  90 0078               my_loop:
+  91 0078                       #addi    $t0, $zero, 0    # setting to zero for branch statements
+  92 0078                       # TODO change register above
+  93 0078 02754022	        sub     $t0, $s3, $s5    # diff between the area and ending of first
+  94 007c 02964822	        sub     $t1, $s4, $s6    # diff between the area and ending of second
+  95 0080 0109B820	        add     $s7, $t0, $t1
+  96 0084 22F70004	        addi    $s7, $s7, 4     
+  97 0088               
+  98 0088 02E0082A	        blt     $s7, $zero, restore
+     008c 1420000F
+  99 0090               
+ 100 0090 8EA40000	        lw      $a0, 0($s5)
+ 101 0094 8EC50000	        lw      $a1, 0($s6)
+ 102 0098               
+ 103 0098 0100082A	        blt     $t0, $zero, second_area
+     009c 14200007
+ 104 00a0 0120082A	        blt     $t1, $zero, first_area
+     00a4 14200002
+ 105 00a8               
+ 106 00a8 0240F809	        jalr    $s2               # go to the cmpr fn if first and second are not empty
+ 107 00ac 10400003	        beq     $v0, $zero, second_area # Act based on the result
+ 108 00b0               
+ 109 00b0               first_area:
+ 110 00b0 AE240000	        sw      $a0, 0($s1)             # The value of a0 goes first
+ 111 00b4 22B50004	        addi    $s5, $s5, 4             # Shift FIRST AREA START (pointer)
+ 112 00b8 08000031	        j       compare_done
+ 113 00bc                       
+ 114 00bc               second_area:
+ 115 00bc AE250000	        sw      $a1, 0($s1)             # The value of a1 goes first
+ 116 00c0 22D60004	        addi    $s6, $s6, 4             # Shift SECOND AREA START (pointer)
+ 117 00c4                       
+ 118 00c4               compare_done:
+ 119 00c4 22310004	        addi    $s1, $s1, 4             # Increment scrap array addr (pointer)
+ 120 00c8 0800001E	        j       my_loop
+ 121 00cc               
+ 122 00cc               restore:
+ 123 00cc 8FB10014	        lw      $s1, 20($sp)            # Restore the original scrap array addr
+ 124 00d0 8FB50018	        lw      $s5, 24($sp)            # Restore original FIRST AREA START
+ 125 00d4               
+ 126 00d4               copy_loop:
+ 127 00d4 02954022	        sub     $t0, $s4, $s5           # Loop until FIRST AREA START >
+ 128 00d8 05000005	        bltz    $t0, done_merge          #            SECOND AREA END
+ 129 00dc 8E280000	        lw      $t0, 0($s1)             # Load scrap array element
+ 130 00e0 AEA80000	        sw      $t0, 0($s5)             # Store into result array
+ 131 00e4                       
+ 132 00e4 22B50004	        addi    $s5, $s5, 4             # Increment FIRST AREA START (pointer)
+ 133 00e8 22310004	        addi    $s1, $s1, 4             # Increment scrap array addr (pointer)
+ 134 00ec 08000035	        j       copy_loop
+ 135 00f0               
+ 136 00f0               done_merge:
+ 137 00f0 8FBF0000	        lw      $ra, 0($sp)
+ 138 00f4 8FB00004	        lw      $s0, 4($sp)
+ 139 00f8 8FB10008	        lw      $s1, 8($sp)
+ 140 00fc 8FB2000C	        lw      $s2, 12($sp)
+ 141 0100 8FB30010	        lw      $s3, 16($sp)
+ 142 0104 23BD001C	        addi    $sp, $sp, 28
+ 143 0108               ret:
+ 144 0108 03E00008	        jr      $ra
+ 145 010c               
+ 146 010c               # ********** END STUDENT CODE BLOCK 2 **********
+ 147 010c               
+ 148 010c               #
+ 149 010c               # End of Merge routine.
+ 150 010c               #
+
+
+PRINT_INT     = 00000001   
+PRINT_STRING  = 00000004   
+compare_done    000000C4 R  text 
+copy_loop       000000D4 R  text 
+done_merge      000000F0 R  text 
+first_area      000000B0 R  text 
+merge           00000000 RG text 
+my_loop         00000078 R  text 
+restore         000000CC R  text 
+ret             00000108 R  text 
+second_area     000000BC R  text 

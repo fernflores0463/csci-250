@@ -1,0 +1,203 @@
+   1 0000               SPACE_CHAR   = 32
+   2 0000               NEWLINE      = 10
+   3 0000               PIPE         = 124
+   4 0000               PLUS_SIGN    = 43
+   5 0000               HYPHEN       = 45  
+   6 0000               PERIOD       = 46
+   7 0000               TREE   = 116
+   8 0000               BURN   = 66
+   9 0000               INDICATOR = 105 
+  10 0000               
+  11 0000                       .globl  create_board_header
+  12 0000                       .globl	main
+  13 0000                       .globl  game_board
+  14 0000                       .globl  game_board_cpy
+  15 0000                       .globl  create_board_header
+  16 0000                       .globl  input_buffer
+  17 0000                       .globl  print_error
+  18 0000                       .globl  char_error
+  19 0000               #
+  20 0000               # Name:         create_board_header
+  21 0000               #
+  22 0000               # Description:  EXECUTION BEGINS HERE
+  23 0000               # Arguments:    $a0 - address of the stdin
+  24 0000               #               $a1 - length of the board
+  25 0000               #               $a2 - MAYBE 
+  26 0000               # Returns:      none
+  27 0000               # Destroys:     
+  28 0000               #
+  29 0000               create_board_header:
+  30 0000 23BDFFF4	        addi	$sp,$sp,-12	# allocate space for the return address
+  31 0004 AFBF0008		sw	$ra,8($sp)	# store the ra on the stack
+  32 0008 AFB00004		sw	$s0,4($sp)	# store the ra on the stack
+  33 000c AFB10000		sw	$s1,0($sp)	# store the ra on the stack
+  34 0010                       # for i in range of board len + 2
+  35 0010                       #       if i == 0 or i == len - 1
+  36 0010                       #               set curr index to '+'
+  37 0010                       #       else:
+  38 0010                       #               set curr index t0 '-'
+  39 0010 3C100000	        la      $s0, game_board
+     0014 36100000
+  40 0018 3C170000	        la      $s7, game_board_cpy
+     001c 36F70000
+  41 0020 00805821	        move    $t3, $a0
+  42 0024 00A0A021	        move    $s4, $a1
+  43 0028 00A04021	        move    $t0, $a1       # setting the $t0 to grid length
+  44 002c 340A002B	        li      $t2, PLUS_SIGN
+  45 0030 A20A0000	        sb      $t2, 0($s0)
+  46 0034 A2EA0000	        sb      $t2, 0($s7)
+  47 0038               header_loop:
+  48 0038 22100001	        addi    $s0, $s0, 1
+  49 003c 22F70001	        addi    $s7, $s7, 1
+  50 0040               
+  51 0040 340A002D	        li      $t2, HYPHEN
+  52 0044               
+  53 0044 A20A0000	        sb      $t2, 0($s0)
+  54 0048 A2EA0000	        sb      $t2, 0($s7)
+  55 004c               
+  56 004c 2108FFFF	        addi    $t0, $t0, -1
+  57 0050 1500FFF9	        bne     $t0, $zero, header_loop
+  58 0054                       
+  59 0054               after_header_loop:
+  60 0054 3409002B	        li      $t1, PLUS_SIGN     # setting to the byte value for '+'
+  61 0058               
+  62 0058 22100001	        addi    $s0, $s0, 1
+  63 005c 22F70001	        addi    $s7, $s7, 1
+  64 0060 A2090000	        sb      $t1, 0($s0)        # setting the byte value in the string
+  65 0064 A2E90000	        sb      $t1, 0($s7)
+  66 0068               
+  67 0068 3409000A	        li      $t1, NEWLINE       # setting the byte value for '\n'
+  68 006c 22100001	        addi    $s0, $s0, 1        # MIGHT BE A SOURCE OF ERROR
+  69 0070 22F70001	        addi    $s7, $s7, 1
+  70 0074 A2090000	        sb      $t1, 0($s0)        # setting the byte value in the string
+  71 0078 A2E90000	        sb      $t1, 0($s7)
+  72 007c               
+  73 007c                       #move    $s1, $a1            #setting counter for row
+  74 007c 02807821	        move    $t7, $s4
+  75 0080                       
+  76 0080                       
+  77 0080               row_loop:
+  78 0080 02804021	        move    $t0, $s4    # set t0 to the length of the grid
+  79 0084 02809821	        move    $s3, $s4
+  80 0088                       
+  81 0088 3409007C	        li      $t1, PIPE      # setting the byte value for '|'
+  82 008c               
+  83 008c 22100001	        addi    $s0, $s0, 1
+  84 0090 22F70001	        addi    $s7, $s7, 1
+  85 0094 A2090000	        sb      $t1, 0($s0)  # setting the byte value in the string
+  86 0098 A2E90000	        sb      $t1, 0($s7)
+  87 009c               
+  88 009c                       ##
+  89 009c 3C040000	        la      $a0, input_buffer     # a0 = &input_buffer
+     00a0 34840000
+  90 00a4 34050032	        li      $a1, 50               # read 5 chars
+  91 00a8 34020008	        li      $v0, 8
+  92 00ac 0000000C	        syscall
+  93 00b0                       ##
+  94 00b0               
+  95 00b0               col_loop:
+  96 00b0 22100001	        addi    $s0, $s0, 1
+  97 00b4 22F70001	        addi    $s7, $s7, 1
+  98 00b8               
+  99 00b8 808A0000	        lb      $t2, 0($a0)    # get char from the input
+ 100 00bc               
+ 101 00bc                       #$$$$$$$$$$$$$$$$$$
+ 102 00bc 34090074	        li     $t1, TREE
+ 103 00c0 11490007	        beq    $t2, $t1, skip_check
+ 104 00c4 34090042	        li     $t1, BURN
+ 105 00c8 11490005	        beq    $t2, $t1, skip_check
+ 106 00cc 3409002E	        li     $t1, PERIOD
+ 107 00d0 112A0003	        beq    $t1, $t2, skip_check
+ 108 00d4 3C040000	        la     $a0, char_error
+     00d8 34840000
+ 109 00dc 08000000	        j      print_error
+ 110 00e0                       #$$$$$$$$$$$$$$$$$$
+ 111 00e0               skip_check:
+ 112 00e0 A20A0000	        sb      $t2, 0($s0)    # set index to byte
+ 113 00e4 A2EA0000	        sb      $t2, 0($s7) 
+ 114 00e8               
+ 115 00e8 20840001	        addi    $a0, $a0, 1
+ 116 00ec 2273FFFF	        addi    $s3, $s3, -1
+ 117 00f0 1660FFEF	        bne     $s3, $zero, col_loop	# if len_of_board != $zer0 then create_board
+ 118 00f4                       
+ 119 00f4                       # Adding a pipe, \n, and pipe (prep
+ 120 00f4 22100001	        addi    $s0, $s0, 1
+ 121 00f8 22F70001	        addi    $s7, $s7, 1
+ 122 00fc 3409007C	        li      $t1, PIPE      # setting the byte value for '|'
+ 123 0100 A2090000	        sb      $t1, 0($s0)
+ 124 0104 A2E90000	        sb      $t1, 0($s7)
+ 125 0108               
+ 126 0108 22100001	        addi    $s0, $s0, 1
+ 127 010c 22F70001	        addi    $s7, $s7, 1
+ 128 0110 3409000A	        li      $t1, NEWLINE       # setting the byte value for '\n'
+ 129 0114 A2090000	        sb      $t1, 0($s0)        # setting the byte value in the string
+ 130 0118 A2E90000	        sb      $t1, 0($s7)
+ 131 011c                       
+ 132 011c 21EFFFFF	        addi    $t7, $t7, -1
+ 133 0120 15E0FFD7	        bne     $t7, $zero, row_loop
+ 134 0124               
+ 135 0124                       # USE T0 FOR LEN OF GRID
+ 136 0124 22100001	        addi    $s0, $s0, 1
+ 137 0128 22F70001	        addi    $s7, $s7, 1
+ 138 012c 340A002B	        li      $t2, PLUS_SIGN
+ 139 0130 A20A0000	        sb      $t2, 0($s0)
+ 140 0134 A2EA0000	        sb      $t2, 0($s7) 
+ 141 0138               footer_loop:
+ 142 0138 22100001	        addi    $s0, $s0, 1
+ 143 013c 22F70001	        addi    $s7, $s7, 1
+ 144 0140 340A002D	        li      $t2, HYPHEN
+ 145 0144 A20A0000	        sb      $t2, 0($s0)
+ 146 0148 A2EA0000	        sb      $t2, 0($s7)
+ 147 014c                       
+ 148 014c 2108FFFF	        addi    $t0, $t0, -1
+ 149 0150 1500FFF9	        bne     $t0, $zero, footer_loop
+ 150 0154                       
+ 151 0154               after_footer_loop:
+ 152 0154 3409002B	        li      $t1, PLUS_SIGN     # setting to the byte value for '+'
+ 153 0158 22100001	        addi    $s0, $s0, 1
+ 154 015c 22F70001	        addi    $s7, $s7, 1
+ 155 0160 A2090000	        sb      $t1, 0($s0)        # setting the byte value in the string
+ 156 0164 A2E90000	        sb      $t1, 0($s7)
+ 157 0168                       
+ 158 0168 3409000A	        li      $t1, NEWLINE       # setting the byte value for '\n'
+ 159 016c 22100001	        addi    $s0, $s0, 1        # MIGHT BE A SOURCE OF ERROR
+ 160 0170 22F70001	        addi    $s7, $s7, 1
+ 161 0174 A2090000	        sb      $t1, 0($s0)        # setting the byte value in the string
+ 162 0178 A2E90000	        sb      $t1, 0($s7)
+ 163 017c               
+ 164 017c 22100001	        addi    $s0, $s0, 1        # MIGHT BE A SOURCE OF ERROR
+ 165 0180 22F70001	        addi    $s7, $s7, 1
+ 166 0184 A2090000	        sb      $t1, 0($s0)        # setting the byte value in the string
+ 167 0188 A2E90000	        sb      $t1, 0($s7)
+ 168 018c               
+ 169 018c 8FB10000	        lw	$s1,0($sp)
+ 170 0190 8FB00004		lw	$s0,4($sp)
+ 171 0194 8FBF0008		lw	$ra,8($sp)	# restore the ra
+ 172 0198 23BD000C		addi	$sp,$sp,12	# deallocate stack space
+ 173 019c               
+ 174 019c 03E00008	        jr      $ra
+
+
+BURN                 = 00000042   
+HYPHEN               = 0000002D   
+INDICATOR            = 00000069   
+NEWLINE              = 0000000A   
+PERIOD               = 0000002E   
+PIPE                 = 0000007C   
+PLUS_SIGN            = 0000002B   
+SPACE_CHAR           = 00000020   
+TREE                 = 00000074   
+after_footer_loop      00000154 R  text 
+after_header_loop      00000054 R  text 
+char_error             ******** XG
+col_loop               000000B0 R  text 
+create_board_header    00000000 RG text 
+footer_loop            00000138 R  text 
+game_board             ******** XG
+game_board_cpy         ******** XG
+header_loop            00000038 R  text 
+input_buffer           ******** XG
+main                   ******** XG
+print_error            ******** XG
+row_loop               00000080 R  text 
+skip_check             000000E0 R  text 

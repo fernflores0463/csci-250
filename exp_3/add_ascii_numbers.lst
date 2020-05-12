@@ -1,0 +1,116 @@
+   1 0000               # File:		add_ascii_numbers.asm
+   2 0000               # Author:	K. Reek
+   3 0000               # Contributors:	P. White, W. Carithers
+   4 0000               #		Fernando Flores Hernandez
+   5 0000               #
+   6 0000               # Updates:
+   7 0000               #		3/2004	M. Reek, named constants
+   8 0000               #		10/2007 W. Carithers, alignment
+   9 0000               #		09/2009 W. Carithers, separate assembly
+  10 0000               #
+  11 0000               # Description:	Add two ASCII numbers and store the result in ASCII.
+  12 0000               #
+  13 0000               # Arguments:	a0: address of parameter block.  The block consists of
+  14 0000               #		four words that contain (in this order):
+  15 0000               #
+  16 0000               #			address of first input string
+  17 0000               #			address of second input string
+  18 0000               #			address where result should be stored
+  19 0000               #			length of the strings and result buffer
+  20 0000               #
+  21 0000               #		(There is actually other data after this in the
+  22 0000               #		parameter block, but it is not relevant to this routine.)
+  23 0000               #
+  24 0000               # Returns:	The result of the addition, in the buffer specified by
+  25 0000               #		the parameter block.
+  26 0000               #
+  27 0000               
+  28 0000               	.globl	add_ascii_numbers
+  29 0000               
+  30 0000               add_ascii_numbers:
+  31 0000               A_FRAMESIZE = 40
+  32 0000               
+  33 0000               #
+  34 0000               # Save registers ra and s0 - s7 on the stack.
+  35 0000               #
+  36 0000 23BDFFD8		addi 	$sp, $sp, -A_FRAMESIZE
+  37 0004 AFBF0024		sw 	$ra, -4+A_FRAMESIZE($sp)
+  38 0008 AFB7001C		sw 	$s7, 28($sp)
+  39 000c AFB60018		sw 	$s6, 24($sp)
+  40 0010 AFB50014		sw 	$s5, 20($sp)
+  41 0014 AFB40010		sw 	$s4, 16($sp)
+  42 0018 AFB3000C		sw 	$s3, 12($sp)
+  43 001c AFB20008		sw 	$s2, 8($sp)
+  44 0020 AFB10004		sw 	$s1, 4($sp)
+  45 0024 AFB00000		sw 	$s0, 0($sp)
+  46 0028               	
+  47 0028               # ##### BEGIN STUDENT CODE BLOCK 1 #####
+  48 0028               
+  49 0028               setup:
+  50 0028 8C900000		lw      $s0, 0($a0)		    # address of 1st input
+  51 002c 8C910004		lw      $s1, 4($a0)		    # address of second input
+  52 0030 8C920008		lw      $s2, 8($a0)		    # result
+  53 0034 8C93000C		lw      $s3, 12($a0)	    # s0 = address of length
+  54 0038               
+  55 0038 20190000		addi    $t9, $zero, 0			    # set the carry value to 0
+  56 003c 2018FFD0		addi    $t8, $zero, -48		    # set the ascii (number) to -48 (a zero)
+  57 0040 200F003A		addi    $t7, $zero, 58			    # set t7 to ascii (num) 10
+  58 0044               
+  59 0044               	
+  60 0044               myloop:
+  61 0044 12600012		beq	    $s3, $zero, done	# if done going through the string, go to done
+  62 0048               
+  63 0048 2273FFFF		addi    $s3, $s3, -1		# decrease the amount of digits left by 1
+  64 004c 02134020		add	    $t0, $s0, $s3		# address of the next digit of the the first num
+  65 0050 02334820		add     $t1, $s1, $s3		# address of the next digit of the the second num
+  66 0054               
+  67 0054 810A0000		lb	    $t2, 0($t0)			# next digit of 1st input
+  68 0058 812B0000		lb	    $t3, 0($t1)			# next digit of 2nd input
+  69 005c               
+  70 005c 014B6020		add     $t4, $t2, $t3		# t4 = digit of 1st input + digit of 2nd input
+  71 0060 01996020		add	    $t4, $t4, $t9		
+  72 0064 01986020		add     $t4, $t4, $t8		
+  73 0068               
+  74 0068 20190000		addi	$t9, $zero, 0			# reset value of carry to 0
+  75 006c 018F682A		slt	    $t5, $t4, $t7		# t4 < 58 if 0, overflew
+  76 0070 11A00004		beq	    $t5, $zero, do_carry
+  77 0074 0800001E		j	    store_sum           # store the result
+  78 0078               
+  79 0078               store_sum:
+  80 0078 02537020		add	    $t6, $s2, $s3       # get the address of the next 'digit' of the result
+  81 007c A1CC0000		sb	    $t4, 0($t6)         # store the result of the sum of the input for the 'digit'
+  82 0080 08000011		j	    myloop              # loop to get sum of next pair of 'digits'
+  83 0084               
+  84 0084               do_carry:
+  85 0084 218CFFF6		addi	$t4, $t4, -10	    # remove the carry from the sum
+  86 0088 34190001		li		$t9, 1			    # set the carry
+  87 008c 0800001E		j		store_sum		    # store the result, after modifying for carry
+  88 0090               	
+  89 0090               
+  90 0090               done:
+  91 0090               # ###### END STUDENT CODE BLOCK 1 ######
+  92 0090               
+  93 0090               #
+  94 0090               # Restore registers ra and s0 - s7 from the stack.
+  95 0090               #
+  96 0090 8FBF0024		lw 	$ra, -4+A_FRAMESIZE($sp)
+  97 0094 8FB7001C		lw 	$s7, 28($sp)
+  98 0098 8FB60018		lw 	$s6, 24($sp)
+  99 009c 8FB50014		lw 	$s5, 20($sp)
+ 100 00a0 8FB40010		lw 	$s4, 16($sp)
+ 101 00a4 8FB3000C		lw 	$s3, 12($sp)
+ 102 00a8 8FB20008		lw 	$s2, 8($sp)
+ 103 00ac 8FB10004		lw 	$s1, 4($sp)
+ 104 00b0 8FB00000		lw 	$s0, 0($sp)
+ 105 00b4 23BD0028		addi 	$sp, $sp, A_FRAMESIZE
+ 106 00b8               
+ 107 00b8 03E00008		jr	$ra			# Return to the caller.
+
+
+A_FRAMESIZE        = 00000028   
+add_ascii_numbers    00000000 RG text 
+do_carry             00000084 R  text 
+done                 00000090 R  text 
+myloop               00000044 R  text 
+setup                00000028 R  text 
+store_sum            00000078 R  text 

@@ -1,0 +1,724 @@
+   1 0000               #
+   2 0000               # FILE:         $File$
+   3 0000               # AUTHOR:       Phil White, RIT 2016
+   4 0000               # CONTRIBUTORS:
+   5 0000               #		W. Carithers
+   6 0000               #		<<<YOUR NAME HERE>>>
+   7 0000               #
+   8 0000               # DESCRIPTION:
+   9 0000               #	This program is an implementation of merge sort in MIPS
+  10 0000               #	assembly 
+  11 0000               #
+  12 0000               # ARGUMENTS:
+  13 0000               #	None
+  14 0000               #
+  15 0000               # INPUT:
+  16 0000               # 	The numbers to be sorted.  The user will enter a 9999 to
+  17 0000               #	represent the end of the data
+  18 0000               #
+  19 0000               # OUTPUT:
+  20 0000               #	A "before" line with the numbers in the order they were
+  21 0000               #	entered, and an "after" line with the same numbers sorted.
+  22 0000               #
+  23 0000               #
+  24 0000               # REVISION HISTORY:
+  25 0000               #	Jan  2017	- P. White, added more/better merge tests 
+  26 0000               #	Aug  2016	- P. White, Initial version of merge sort exp.
+  27 0000               #
+  28 0000               
+  29 0000               #-------------------------------
+  30 0000               
+  31 0000               #
+  32 0000               # Numeric Constants
+  33 0000               #
+  34 0000               
+  35 0000               MAX_NUMBERS = 20
+  36 0000               STOP_INPUT = 9999
+  37 0000               PRINT_STRING = 4
+  38 0000               READ_INT = 5
+  39 0000               PRINT_INT = 1
+  40 0000               
+  41 0000               #
+  42 0000               # DATA AREAS
+  43 0000               #
+  44 0000               	.data
+  45 0000               	.align	2		# word data must be on word boundaries
+  46 0000               
+  47 0000               parm_block:	
+  48 0000 00000024		.word	array		# the address of the array to sort
+  49 0004 00000074		.word	scratch		# temp storage needed by merge
+  50 0008 00000000		.word	compare		# the comparison function to use
+  51 000c               
+  52 000c               parm_block2:	
+  53 000c 000000C4		.word	arr_copy	# the address of the array to sort
+  54 0010 00000074		.word	scratch		# temp storage needed by merge
+  55 0014 00000000		.word	compare2	# the comparison function to use
+  56 0018               
+  57 0018               
+  58 0018               parm_merge:
+  59 0018 00000114		.word	arr_merge1
+  60 001c 00000074		.word	scratch
+  61 0020 00000000		.word	compare
+  62 0024               
+  63 0024               array:	
+  64 0024 FFFFFFFF		.word	-1,-2,-5,-6,-9,-0,-7,-8,-3,-4
+     0028 FFFFFFFE
+     002c FFFFFFFB
+     0030 FFFFFFFA
+     0034 FFFFFFF7
+     0038 00000000
+  65 004c FFFFFFF5		.word	-11,-12,-15,-16,-19,-10,-17,-18,-13,-14
+     0050 FFFFFFF4
+     0054 FFFFFFF1
+     0058 FFFFFFF0
+     005c FFFFFFED
+     0060 FFFFFFF6
+  66 0074               scratch:
+  67 0074 00000001		.word	 1, 2, 5, 6, 9, 0, 7, 8, 3, 4
+     0078 00000002
+     007c 00000005
+     0080 00000006
+     0084 00000009
+     0088 00000000
+  68 009c 0000000B		.word	11,12,15,16,19,10,17,18,13,14
+     00a0 0000000C
+     00a4 0000000F
+     00a8 00000010
+     00ac 00000013
+     00b0 0000000A
+  69 00c4               
+  70 00c4               arr_copy:	
+  71 00c4 FFFFFFFF		.word	-1,-2,-5,-6,-9,-0,-7,-8,-3,-4
+     00c8 FFFFFFFE
+     00cc FFFFFFFB
+     00d0 FFFFFFFA
+     00d4 FFFFFFF7
+     00d8 00000000
+  72 00ec FFFFFFF5		.word	-11,-12,-15,-16,-19,-10,-17,-18,-13,-14
+     00f0 FFFFFFF4
+     00f4 FFFFFFF1
+     00f8 FFFFFFF0
+     00fc FFFFFFED
+     0100 FFFFFFF6
+  73 0114               
+  74 0114               
+  75 0114               arr_merge1:
+  76 0114 00000002		.word	2, 4, 6, 1, 3, 5
+     0118 00000004
+     011c 00000006
+     0120 00000001
+     0124 00000003
+     0128 00000005
+  77 012c               
+  78 012c               arr_merge2:
+  79 012c 00000018		.word	24, 25, 26, 21, 22, 23
+     0130 00000019
+     0134 0000001A
+     0138 00000015
+     013c 00000016
+     0140 00000017
+  80 0144               
+  81 0144               arr_merge3:
+  82 0144 00000029		.word	41, 42, 43, 44, 45, 46
+     0148 0000002A
+     014c 0000002B
+     0150 0000002C
+     0154 0000002D
+     0158 0000002E
+  83 015c               
+  84 015c               arr_merge3r1:
+  85 015c 00000055		.word	85, 86, 87, 88, 32, 34, 31, 33
+     0160 00000056
+     0164 00000057
+     0168 00000058
+     016c 00000020
+     0170 00000022
+  86 017c               
+  87 017c               arr_merge3l1:
+  88 017c 0000000F		.word	15, 18, 16, 17, 81, 82, 83, 84
+     0180 00000012
+     0184 00000010
+     0188 00000011
+     018c 00000051
+     0190 00000052
+  89 019c               
+  90 019c               arr_merge3m1:
+  91 019c 0000005B		.word	91, 92, 93, 94, 111, 116, 110, 113 
+     01a0 0000005C
+     01a4 0000005D
+     01a8 0000005E
+     01ac 0000006F
+     01b0 00000074
+  92 01bc 0000005F		.word	95, 94,	95, 99, 96, 98, 97, 92
+     01c0 0000005E
+     01c4 0000005F
+     01c8 00000063
+     01cc 00000060
+     01d0 00000062
+  93 01dc               
+  94 01dc               
+  95 01dc               	.align	0		# string data doesn't have to be aligned
+  96 01dc               space:	
+  97 01dc 2000    		.asciiz	" "
+  98 01de               pound:	
+  99 01de 2300    		.asciiz	"#"
+ 100 01e0               dollar:	
+ 101 01e0 2400    		.asciiz	"$"
+ 102 01e2               newline:
+ 103 01e2 0A00    		.asciiz	"\n"
+ 104 01e4               before:	
+ 105 01e4 4265666F		.asciiz	"Before: "
+          72653A20
+          00      
+ 106 01ed               after:	
+ 107 01ed 41667465		.asciiz	"After : "
+          72203A20
+          00      
+ 108 01f6               prompt:	
+ 109 01f6 42656769		.asciiz	"Begin Entering Numbers, enter 9999 to quit:\n"
+          6E20456E
+          74657269
+          6E67204E
+          756D6265
+          72732C20
+ 110 0223               
+ 111 0223               in_order_text:
+ 112 0223 496E204F		.asciiz "In Order\n"
+          72646572
+          0A00    
+ 113 022d               
+ 114 022d               rev_order_text:
+ 115 022d 52657665		.asciiz "Reverse Order\n"
+          72736520
+          4F726465
+          720A00  
+ 116 023c               
+ 117 023c               
+ 118 023c               merge_header_text:
+ 119 023c 4D657267		.asciiz "Merge Tests\n"
+          65205465
+          7374730A
+          00      
+ 120 0249               
+ 121 0249               merge_done_text:
+ 122 0249 4D657267		.asciiz "Merge Tests Done\n"
+          65205465
+          73747320
+          446F6E65
+          0A00    
+ 123 025b               
+ 124 025b               merge_test_mid:
+ 125 025b 4D657267		.asciiz "Merge called only on middle:\n"
+          65206361
+          6C6C6564
+          206F6E6C
+          79206F6E
+          206D6964
+ 126 0279               
+ 127 0279               merge_test_left:
+ 128 0279 4D657267		.asciiz "Merge called only on the left half:\n"
+          65206361
+          6C6C6564
+          206F6E6C
+          79206F6E
+          20746865
+ 129 029e               
+ 130 029e               merge_test_right:
+ 131 029e 4D657267		.asciiz "Merge called only on the right half:\n"
+          65206361
+          6C6C6564
+          206F6E6C
+          79206F6E
+          20746865
+ 132 02c4               
+ 133 02c4               #-------------------------------
+ 134 02c4               
+ 135 02c4               #
+ 136 02c4               # CODE AREAS
+ 137 02c4               #
+ 138 0000               	.text			# this is program code
+ 139 0000               	.align	2		# instructions must be on word boundaries
+ 140 0000               
+ 141 0000               	.globl	main		# main is a global label
+ 142 0000               	.globl	sort		# the extewrnal sort routine
+ 143 0000               	.globl	merge		# the extewrnal merge routine
+ 144 0000               
+ 145 0000               #
+ 146 0000               # EXECUTION BEGINS HERE
+ 147 0000               #
+ 148 0000               main:
+ 149 0000 23BDFFF4		addi	$sp,$sp,-12	# allocate space for the return address
+ 150 0004 AFBF0008		sw	$ra,8($sp)	# store the ra on the stack
+ 151 0008 AFB70004		sw	$s7,4($sp)	# store the ra on the stack
+ 152 000c AFB60000		sw	$s6,0($sp)	# store the ra on the stack
+ 153 0010               
+ 154 0010               
+ 155 0010 0C0000A7		jal	merge_test
+ 156 0014               
+ 157 0014               no_merge_test:
+ 158 0014 3C040000		la	$a0,array	# set up to read in an array of ints
+     0018 34840000
+ 159 001c 34050014		li	$a1,MAX_NUMBERS	# and put them at label array
+ 160 0020 0C000061		jal	readarray
+ 161 0024 0040B821		move	$s7,$v0		# save the number of numbers read in
+ 162 0028               
+ 163 0028 3C040000		la	$a0,array
+     002c 34840000
+ 164 0030 3C050000		la	$a1,arr_copy
+     0034 34A50000
+ 165 0038 02E03021		move	$a2,$s7
+ 166 003c 0C000076		jal	copyarray
+ 167 0040               
+ 168 0040               
+ 169 0040 34020004		li	$v0,4
+ 170 0044 3C040000		la	$a0,rev_order_text
+     0048 34840000
+ 171 004c 0000000C		syscall
+ 172 0050               
+ 173 0050 3C040000		la	$a0,parm_block2	# set up for call to sort
+     0054 34840000
+ 174 0058 02E02821		move	$a1,$s7		# the number of elements
+ 175 005c 0C00002D		jal	run_test	# run the test
+ 176 0060               
+ 177 0060 34020004		li	$v0,4
+ 178 0064 3C040000		la	$a0,newline
+     0068 34840000
+ 179 006c 0000000C		syscall			# print a newline
+ 180 0070               
+ 181 0070               
+ 182 0070 34020004		li	$v0,4
+ 183 0074 3C040000		la	$a0,in_order_text
+     0078 34840000
+ 184 007c 0000000C		syscall
+ 185 0080               
+ 186 0080 3C040000		la	$a0,parm_block	# set up for call to sort
+     0084 34840000
+ 187 0088 02E02821		move	$a1,$s7		# the number of elements
+ 188 008c 0C00002D		jal	run_test	# run the test
+ 189 0090               
+ 190 0090 34020004		li	$v0,4
+ 191 0094 3C040000		la	$a0,newline
+     0098 34840000
+ 192 009c 0000000C		syscall			# print a newline
+ 193 00a0               
+ 194 00a0               main_done:
+ 195 00a0 8FB60000		lw	$s6,0($sp)
+ 196 00a4 8FB70004		lw	$s7,4($sp)
+ 197 00a8 8FBF0008		lw	$ra,8($sp)	# restore the ra
+ 198 00ac 23BD000C		addi	$sp,$sp,12	# deallocate stack space
+ 199 00b0 03E00008		jr	$ra		# return from main and exit spim
+ 200 00b4               
+ 201 00b4               #-------------------------------
+ 202 00b4               
+ 203 00b4               #
+ 204 00b4               # Name:		run_test
+ 205 00b4               # Description:	run a test of the merge sort algorithm
+ 206 00b4               # Arguments:    a0:     a parameter block containing 3 values
+ 207 00b4               #                       - the address of the array to sort
+ 208 00b4               #                       - the address of the scrap array needed by merge
+ 209 00b4               #                       - the address of the compare function to use
+ 210 00b4               #                         when ordering data
+ 211 00b4               #               a1:     the number of elements
+ 212 00b4               # Returns:      none
+ 213 00b4               # Destroys:     none
+ 214 00b4               #
+ 215 00b4               
+ 216 00b4               run_test:
+ 217 00b4 23BDFFEC	        addi    $sp,$sp,-20
+ 218 00b8 AFBF0010	        sw      $ra,16($sp)
+ 219 00bc AFB3000C	        sw      $s3,12($sp)
+ 220 00c0 AFB20008	        sw      $s2, 8($sp)
+ 221 00c4 AFB10004	        sw      $s1, 4($sp)
+ 222 00c8 AFB00000	        sw      $s0, 0($sp)
+ 223 00cc               
+ 224 00cc 00808021		move 	$s0,$a0		# s0 is the &param block
+ 225 00d0 00A08821		move 	$s1,$a1		# the number of elements
+ 226 00d4 8E130000		lw	$s3,0($s0)	# get the address of the array
+ 227 00d8               	
+ 228 00d8 34020004		li	$v0,PRINT_STRING
+ 229 00dc 3C040000		la	$a0,before
+     00e0 34840000
+ 230 00e4 0000000C		syscall			# print the before message
+ 231 00e8               
+ 232 00e8 02602021		move	$a0,$s3	
+ 233 00ec 02202821		move	$a1,$s1
+ 234 00f0 0C00004F		jal	parray
+ 235 00f4               
+ 236 00f4 02002021		move	$a0,$s0		# set up for call to sort
+ 237 00f8 34050000		li	$a1,0		# lo the index of the first element
+ 238 00fc 2226FFFF		addi	$a2,$s1,-1	# hi is index of last element
+ 239 0100 0C000000		jal	sort		# go sort em
+ 240 0104               
+ 241 0104 34020004		li	$v0,PRINT_STRING
+ 242 0108 3C040000		la	$a0,after
+     010c 34840000
+ 243 0110 0000000C		syscall			# print the after message
+ 244 0114               
+ 245 0114 02602021		move	$a0,$s3		# print the array again (now sorted)
+ 246 0118 02202821		move	$a1,$s1
+ 247 011c 0C00004F		jal	parray
+ 248 0120               
+ 249 0120               
+ 250 0120 8FBF0010	        lw      $ra,16($sp)
+ 251 0124 8FB3000C	        lw      $s3,12($sp)
+ 252 0128 8FB20008	        lw      $s2, 8($sp)
+ 253 012c 8FB10004	        lw      $s1, 4($sp)
+ 254 0130 8FB00000	        lw      $s0, 0($sp)
+ 255 0134 23BD0014	        addi    $sp,$sp,20     # sort
+ 256 0138 03E00008	        jr      $ra
+ 257 013c               
+ 258 013c               #-------------------------------
+ 259 013c               
+ 260 013c               #
+ 261 013c               # Name:		parray
+ 262 013c               # Description:	printarray prints an array of integers
+ 263 013c               # Arguments:    a0: 	the address of the array
+ 264 013c               #   		a1: 	the number of elements in the array
+ 265 013c               # Returns:      none
+ 266 013c               # Destroys:     t0,t1
+ 267 013c               #
+ 268 013c               
+ 269 013c               parray:
+ 270 013c 34080000		li	$t0,0		# i=0;
+ 271 0140 00804821		move	$t1,$a0		# t1 is pointer to array
+ 272 0144               pa_loop:
+ 273 0144 1105000A		beq	$t0,$a1,pa_done	# done if i==n
+ 274 0148               
+ 275 0148 8D240000		lw	$a0,0($t1)	# get a[i]
+ 276 014c 34020001		li	$v0,PRINT_INT
+ 277 0150 0000000C		syscall			# print one int
+ 278 0154               
+ 279 0154 34020004		li	$v0,PRINT_STRING
+ 280 0158 3C040000		la	$a0,space
+     015c 34840000
+ 281 0160 0000000C		syscall			# print a space
+ 282 0164               
+ 283 0164 21290004		addi	$t1,$t1,4	# update pointer
+ 284 0168 21080001		addi	$t0,$t0,1	# and count
+ 285 016c 08000051		j	pa_loop
+ 286 0170               pa_done:
+ 287 0170 34020004		li	$v0,4
+ 288 0174 3C040000		la	$a0,newline
+     0178 34840000
+ 289 017c 0000000C		syscall			# print a newline
+ 290 0180               
+ 291 0180 03E00008		jr	$ra
+ 292 0184               
+ 293 0184               #-------------------------------
+ 294 0184               
+ 295 0184               # Name:		readarray
+ 296 0184               # Description:	reads in an array of integers
+ 297 0184               # Arguments:	a0:	the address of the array
+ 298 0184               # 		a1:	the max number of elements in the array
+ 299 0184               # Returns:      none
+ 300 0184               # Destroys:     t0,t1,t2
+ 301 0184               #
+ 302 0184               
+ 303 0184               readarray:
+ 304 0184 34080000		li	$t0,0		# i=0;
+ 305 0188 340A270F		li	$t2,STOP_INPUT	# if equal to $t2, then stop
+ 306 018c 00804821		move	$t1,$a0		# t1 is pointer to array
+ 307 0190               
+ 308 0190 34020004		li	$v0,PRINT_STRING
+ 309 0194 3C040000		la	$a0,prompt
+     0198 34840000
+ 310 019c 0000000C		syscall			# print one int
+ 311 01a0               
+ 312 01a0               ra_loop:
+ 313 01a0 11050007		beq	$t0,$a1,ra_done	# done if i==n
+ 314 01a4               
+ 315 01a4 34020005		li	$v0,READ_INT
+ 316 01a8 0000000C		syscall
+ 317 01ac 104A0004		beq	$v0,$t2,ra_done	# done if i==n
+ 318 01b0 AD220000		sw	$v0,0($t1)
+ 319 01b4               
+ 320 01b4 21290004		addi	$t1,$t1,4	# update pointer
+ 321 01b8 21080001		addi	$t0,$t0,1	# and count
+ 322 01bc 08000068		j	ra_loop
+ 323 01c0               ra_done:
+ 324 01c0 34020004		li	$v0,PRINT_STRING
+ 325 01c4 3C040000		la	$a0,newline
+     01c8 34840000
+ 326 01cc 0000000C		syscall			# print a message
+ 327 01d0               
+ 328 01d0 01001021		move	$v0,$t0
+ 329 01d4 03E00008		jr	$ra
+ 330 01d8               
+ 331 01d8               #-------------------------------
+ 332 01d8               
+ 333 01d8               #
+ 334 01d8               # Name:		copyarray
+ 335 01d8               # Description:	copyarray copies an array of integers
+ 336 01d8               # Arguments:    a0: 	the address of the source array
+ 337 01d8               #   		a1: 	the address of the destination array
+ 338 01d8               #   		a2: 	the number of elements in the array
+ 339 01d8               # Returns:      none
+ 340 01d8               # Destroys:     t0,t1
+ 341 01d8               #
+ 342 01d8               
+ 343 01d8               copyarray:
+ 344 01d8 34080000		li	$t0,0		# i=0;
+ 345 01dc               ca_loop:
+ 346 01dc 11060006		beq	$t0,$a2,ca_done	# done if i==n
+ 347 01e0               
+ 348 01e0 8C890000		lw	$t1,0($a0)	# read from a[i]
+ 349 01e4 ACA90000		sw	$t1,0($a1)	# write to  b[i]
+ 350 01e8               
+ 351 01e8 20840004		addi	$a0,$a0,4	# update src pointer
+ 352 01ec 20A50004		addi	$a1,$a1,4	# update dst pointer
+ 353 01f0 21080001		addi	$t0,$t0,1	# and count
+ 354 01f4 08000077		j	ca_loop
+ 355 01f8               ca_done:
+ 356 01f8               
+ 357 01f8 03E00008		jr	$ra
+ 358 01fc               
+ 359 01fc               #-------------------------------
+ 360 01fc               
+ 361 01fc               # Name:		run_merge
+ 362 01fc               # Description:	This function tests the merge function independent
+ 363 01fc               #		of the sort function.  It is used for testing
+ 364 01fc               # params:       a0: the array of data to merge
+ 365 01fc               #		a1: the first index
+ 366 01fc               #		a2: the last index
+ 367 01fc               #		a3: the size of array
+ 368 01fc               # returns:      none
+ 369 01fc               # Destroys:	t0, 
+ 370 01fc               run_merge:
+ 371 01fc 23BDFFEC		addi	$sp, $sp, -20
+ 372 0200 AFBF0010		sw	$ra,16($sp)
+ 373 0204 AFB3000C		sw	$s3,12($sp)
+ 374 0208 AFB20008		sw	$s2, 8($sp)
+ 375 020c AFB10004		sw	$s1, 4($sp)
+ 376 0210 AFB00000		sw	$s0, 0($sp)
+ 377 0214               
+ 378 0214 00808021		move	$s0, $a0		# s0 is addr array
+ 379 0218 00A08821		move	$s1, $a1		# s1 is first index
+ 380 021c 00A64020		add	$t0, $a1, $a2
+ 381 0220 34010002		div	$s2, $t0, 2		# s2 is mid
+     0224 0101001A
+     0228 00009012
+ 382 022c 00E09821		move	$s3, $a3		# s3 is size of array
+ 383 0230               
+ 384 0230 34020004	        li      $v0,PRINT_STRING
+ 385 0234 3C040000	        la      $a0,before
+     0238 34840000
+ 386 023c 0000000C	        syscall
+ 387 0240               
+ 388 0240 02002021		move	$a0, $s0
+ 389 0244 02602821		move	$a1, $s3
+ 390 0248 0C00004F		jal 	parray
+ 391 024c               
+ 392 024c 3C040000		la	$a0, parm_merge
+     0250 34840000
+ 393 0254 AC900000		sw	$s0, 0($a0)
+ 394 0258 02202821		move	$a1, $s1		# s1 is first index
+ 395 025c 02403821		move	$a3, $s2		# set up mid
+ 396 0260 0C000000		jal	merge
+ 397 0264               
+ 398 0264 34020004	        li      $v0,PRINT_STRING
+ 399 0268 3C040000	        la      $a0,after
+     026c 34840000
+ 400 0270 0000000C	        syscall
+ 401 0274               
+ 402 0274 02002021		move	$a0, $s0
+ 403 0278 02602821		move	$a1, $s3
+ 404 027c 0C00004F		jal 	parray
+ 405 0280               
+ 406 0280 8FBF0010		lw	$ra,16($sp)
+ 407 0284 8FB3000C		lw	$s3,12($sp)
+ 408 0288 8FB20008		lw	$s2, 8($sp)
+ 409 028c 8FB10004		lw	$s1, 4($sp)
+ 410 0290 8FB00000		lw	$s0, 0($sp)
+ 411 0294 23BD0014		addi	$sp, $sp, 20
+ 412 0298 03E00008		jr	$ra
+ 413 029c               
+ 414 029c               #-------------------------------
+ 415 029c               
+ 416 029c               # Name:		merge_test
+ 417 029c               # Description:	This function tests the merge function independent
+ 418 029c               #		of the sort function.  It is used for testing
+ 419 029c               # params:       none
+ 420 029c               # returns:      none
+ 421 029c               # Destroys:	t0, 
+ 422 029c               merge_test:
+ 423 029c 23BDFFFC		addi	$sp, $sp, -4
+ 424 02a0 AFBF0000		sw	$ra, 0($sp)
+ 425 02a4               
+ 426 02a4 34020004	        li      $v0,PRINT_STRING
+ 427 02a8 3C040000	        la      $a0,merge_header_text
+     02ac 34840000
+ 428 02b0 0000000C	        syscall
+ 429 02b4               
+ 430 02b4 3C040000		la	$a0, arr_merge1
+     02b8 34840000
+ 431 02bc 34050000		li	$a1, 0
+ 432 02c0 34060005		li	$a2, 5
+ 433 02c4 34070006		li	$a3, 6
+ 434 02c8 0C00007F		jal	run_merge
+ 435 02cc 34020004	        li      $v0,PRINT_STRING
+ 436 02d0 3C040000	        la      $a0,newline
+     02d4 34840000
+ 437 02d8 0000000C	        syscall
+ 438 02dc               
+ 439 02dc 3C040000		la	$a0, arr_merge2
+     02e0 34840000
+ 440 02e4 34050000		li	$a1, 0
+ 441 02e8 34060005		li	$a2, 5
+ 442 02ec 34070006		li	$a3, 6
+ 443 02f0 0C00007F		jal	run_merge
+ 444 02f4 34020004	        li      $v0,PRINT_STRING
+ 445 02f8 3C040000	        la      $a0,newline
+     02fc 34840000
+ 446 0300 0000000C	        syscall
+ 447 0304               
+ 448 0304 3C040000		la	$a0, arr_merge3
+     0308 34840000
+ 449 030c 34050000		li	$a1, 0
+ 450 0310 34060005		li	$a2, 5
+ 451 0314 34070006		li	$a3, 6
+ 452 0318 0C00007F		jal	run_merge
+ 453 031c 34020004	        li      $v0,PRINT_STRING
+ 454 0320 3C040000	        la      $a0,newline
+     0324 34840000
+ 455 0328 0000000C	        syscall
+ 456 032c               
+ 457 032c 34020004	        li      $v0,PRINT_STRING
+ 458 0330 3C040000	        la      $a0,merge_test_right
+     0334 34840000
+ 459 0338 0000000C	        syscall
+ 460 033c               
+ 461 033c 3C040000	        la      $a0, arr_merge3r1
+     0340 34840000
+ 462 0344 34050004	        li      $a1, 4
+ 463 0348 34060007	        li      $a2, 7
+ 464 034c 34070008	        li      $a3, 8
+ 465 0350 0C00007F	        jal     run_merge
+ 466 0354 34020004	        li      $v0,PRINT_STRING
+ 467 0358 3C040000	        la      $a0,newline
+     035c 34840000
+ 468 0360 0000000C	        syscall
+ 469 0364               
+ 470 0364 34020004	        li      $v0,PRINT_STRING
+ 471 0368 3C040000	        la      $a0,merge_test_left
+     036c 34840000
+ 472 0370 0000000C	        syscall
+ 473 0374               
+ 474 0374 3C040000	        la      $a0, arr_merge3l1
+     0378 34840000
+ 475 037c 34050000	        li      $a1, 0
+ 476 0380 34060003	        li      $a2, 3
+ 477 0384 34070008	        li      $a3, 8
+ 478 0388 0C00007F	        jal     run_merge
+ 479 038c 34020004	        li      $v0,PRINT_STRING
+ 480 0390 3C040000	        la      $a0,newline
+     0394 34840000
+ 481 0398 0000000C	        syscall
+ 482 039c               
+ 483 039c 34020004	        li      $v0,PRINT_STRING
+ 484 03a0 3C040000	        la      $a0,merge_test_mid
+     03a4 34840000
+ 485 03a8 0000000C	        syscall
+ 486 03ac               
+ 487 03ac 3C040000	        la      $a0, arr_merge3m1
+     03b0 34840000
+ 488 03b4 34050004	        li      $a1, 4
+ 489 03b8 34060007	        li      $a2, 7
+ 490 03bc 34070010	        li      $a3, 16
+ 491 03c0 0C00007F	        jal     run_merge
+ 492 03c4 34020004	        li      $v0,PRINT_STRING
+ 493 03c8 3C040000	        la      $a0,newline
+     03cc 34840000
+ 494 03d0 0000000C	        syscall
+ 495 03d4               
+ 496 03d4               
+ 497 03d4 34020004	        li      $v0,PRINT_STRING
+ 498 03d8 3C040000	        la      $a0,merge_done_text
+     03dc 34840000
+ 499 03e0 0000000C	        syscall
+ 500 03e4               
+ 501 03e4 8FBF0000		lw	$ra, 0($sp)
+ 502 03e8 23BD0004		addi	$sp, $sp, 4
+ 503 03ec 03E00008		jr	$ra
+ 504 03f0               
+ 505 03f0               #-------------------------------
+ 506 03f0               
+ 507 03f0               # compare function to compare 2 values
+ 508 03f0               # params:	a0	the 1st value
+ 509 03f0               # 		a1	the 2nd value
+ 510 03f0               # returns:	v0	1 	if 1st val < 2nd val
+ 511 03f0               #			0 	othewise
+ 512 03f0               compare:
+ 513 03f0               
+ 514 03f0 0085102A		slt	$v0,$a0,$a1
+ 515 03f4               	
+ 516 03f4 03E00008	        jr      $ra
+ 517 03f8               
+ 518 03f8               #-------------------------------
+ 519 03f8               
+ 520 03f8               # compare2 function to compare 2 values in reverse order
+ 521 03f8               # params:	a0	the 1st value
+ 522 03f8               # 		a1	the 2nd value
+ 523 03f8               # returns:	v0	1 	if 2nd val < 1st val
+ 524 03f8               #			0 	othewise
+ 525 03f8               compare2:
+ 526 03f8               
+ 527 03f8 00A4102A		slt	$v0,$a1,$a0
+ 528 03fc               	
+ 529 03fc 03E00008	        jr      $ra
+ 530 0400               
+ 531 0400               
+ 532 0400               #
+ 533 0400               # End of Mergesort program.
+ 534 0400               #
+
+
+MAX_NUMBERS        = 00000014   
+PRINT_INT          = 00000001   
+PRINT_STRING       = 00000004   
+READ_INT           = 00000005   
+STOP_INPUT         = 0000270F   
+after                000001ED R  data 
+arr_copy             000000C4 R  data 
+arr_merge1           00000114 R  data 
+arr_merge2           0000012C R  data 
+arr_merge3           00000144 R  data 
+arr_merge3l1         0000017C R  data 
+arr_merge3m1         0000019C R  data 
+arr_merge3r1         0000015C R  data 
+array                00000024 R  data 
+before               000001E4 R  data 
+ca_done              000001F8 R  text 
+ca_loop              000001DC R  text 
+compare              000003F0 R  text 
+compare2             000003F8 R  text 
+copyarray            000001D8 R  text 
+dollar               000001E0 R  data 
+in_order_text        00000223 R  data 
+main                 00000000 RG text 
+main_done            000000A0 R  text 
+merge                ******** XG
+merge_done_text      00000249 R  data 
+merge_header_text    0000023C R  data 
+merge_test           0000029C R  text 
+merge_test_left      00000279 R  data 
+merge_test_mid       0000025B R  data 
+merge_test_right     0000029E R  data 
+newline              000001E2 R  data 
+no_merge_test        00000014 R  text 
+pa_done              00000170 R  text 
+pa_loop              00000144 R  text 
+parm_block           00000000 R  data 
+parm_block2          0000000C R  data 
+parm_merge           00000018 R  data 
+parray               0000013C R  text 
+pound                000001DE R  data 
+prompt               000001F6 R  data 
+ra_done              000001C0 R  text 
+ra_loop              000001A0 R  text 
+readarray            00000184 R  text 
+rev_order_text       0000022D R  data 
+run_merge            000001FC R  text 
+run_test             000000B4 R  text 
+scratch              00000074 R  data 
+sort                 ******** XG
+space                000001DC R  data 

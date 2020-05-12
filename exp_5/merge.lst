@@ -1,0 +1,115 @@
+   1 0000               #
+   2 0000               # FILE:         $File$
+   3 0000               # AUTHOR:       Phil White, RIT 2016
+   4 0000               #               
+   5 0000               # CONTRIBUTORS:
+   6 0000               #		<<<YOUR NAME HERE>>>
+   7 0000               #
+   8 0000               # DESCRIPTION:
+   9 0000               #	This file contains the merge function of mergesort
+  10 0000               #
+  11 0000               
+  12 0000               #-------------------------------
+  13 0000               
+  14 0000               #
+  15 0000               # Numeric Constants
+  16 0000               #
+  17 0000               
+  18 0000               PRINT_STRING = 4
+  19 0000               PRINT_INT = 1
+  20 0000               
+  21 0000               
+  22 0000               #***** BEGIN STUDENT CODE BLOCK 2 ***************************
+  23 0000               
+  24 0000               
+  25 0000               #
+  26 0000               # Make sure to add any .globl that you need here
+  27 0000               #
+  28 0000               .globl merge
+  29 0000               #
+  30 0000               # Name:         merge
+  31 0000               # Description:  takes two individually sorted areas of an array and
+  32 0000               #		merges them into a single sorted area
+  33 0000               #
+  34 0000               #		The two areas are defined between (inclusive)
+  35 0000               #		area1:	low   - mid
+  36 0000               #		area2:	mid+1 - high
+  37 0000               #
+  38 0000               #		Note that the area will be contiguous in the array
+  39 0000               #
+  40 0000               # Arguments:    a0:     a parameter block containing 3 values
+  41 0000               #			- the address of the array to sort
+  42 0000               #			- the address of the scrap array needed by merge
+  43 0000               #			- the address of the compare function to use
+  44 0000               #			  when ordering data
+  45 0000               #               a1:     the index of the first element of the area
+  46 0000               #               a2:     the index of the last element of the area
+  47 0000               #               a3:     the index of the middle element of the area
+  48 0000               # Returns:      none
+  49 0000               # Destroys:     t0,t1
+  50 0000               #
+  51 0000               
+  52 0000               merge:
+  53 0000                       # set a register to 4 to multiply
+  54 0000 20080004	        addi    $t0, $zero, 4
+  55 0004 200E0000	        addi    $t6, $zero, 0
+  56 0008                       # multiply indexes will be used for stuff
+  57 0008 00A80018	        mult    $a1, $t0     # first/ left (l)
+  58 000c 00004812	        mflo    $t1
+  59 0010 00C80018	        mult    $a2, $t0     # last/ right (r)
+  60 0014 00005012	        mflo    $t2
+  61 0018 00E80018	        mult    $a3, $t0     # middle (m)
+  62 001c 00005812	        mflo    $t3
+  63 0020                       # iterate through the array
+  64 0020 014B6022	        sub     $t4, $t2, $t3 # n2 = t4 = r - m
+  65 0024 216DFFFC	        addi    $t5, $t3, -4  # n1 = t5 = m - 1 + l (might fail) (only m-1 is done on this line)
+  66 0028 01A96820	        add     $t5, $t5, $t1 # n1 = t5 = m - 1 + l (might fail)
+  67 002c                       # add to temp lists using n1 and n2 as bounds
+  68 002c 20080001	        addi    $t0, $zero, 1
+  69 0030               
+  70 0030 8C890008	        lw      $t1, 8($a0)     # address to the compare function
+  71 0034 8C8F0004	        lw      $t7, 4($a0)     # pointer to begin of scrap array
+  72 0038 8C980000	        lw      $t8, 0($a0)     # pointer to begin of array
+  73 003c               
+  74 003c               
+  75 003c                       #loop "while i is less than n1"
+  76 003c 01E95020	        add     $t2, $t7, $t1   # add to point to the correct "begin" element
+  77 0040 01EA5820	        add     $t3, $t7, $t2   # add to point to the correct "end" element
+  78 0044 0120F809	        jalr     $t1
+  79 0048                       # use v0, the returned value for the comparison
+  80 0048 10480001	        beq    $v0, $t0, put_in_scrap
+  81 004c               
+  82 004c                       
+  83 004c                       
+  84 004c                       
+  85 004c 0C000014	        jal		loop1				# jump to target and save position to $ra
+  86 0050               
+  87 0050               put_in_scrap:
+  88 0050                       
+  89 0050               
+  90 0050               #this loop if for n1
+  91 0050               loop1:
+  92 0050 11AE0003	        beq     $t5, $t6, done
+  93 0054 ADF80000	        sw		$t8, 0($t7)	   # store a value into t7
+  94 0058 21EF0004	        addi    $t7, 4         # next element in scrap array
+  95 005c 21CE0004	        addi    $t6, 4         # increment counter by 4
+  96 0060               
+  97 0060               done:
+  98 0060               
+  99 0060               
+ 100 0060                       
+ 101 0060               
+ 102 0060               
+ 103 0060               # ********** END STUDENT CODE BLOCK 2 **********
+ 104 0060               
+ 105 0060               #
+ 106 0060               # End of Merge routine.
+ 107 0060               #
+
+
+PRINT_INT     = 00000001   
+PRINT_STRING  = 00000004   
+done            00000060 R  text 
+loop1           00000050 R  text 
+merge           00000000 RG text 
+put_in_scrap    00000050 R  text 

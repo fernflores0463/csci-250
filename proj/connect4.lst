@@ -1,0 +1,808 @@
+   1 0000               
+   2 0000               PRINT_STRING = 4		# arg for syscall to tell it to write
+   3 0000               SPACE_CHAR   = 32
+   4 0000               NEWLINE      = 10
+   5 0000               P1_CHAR      = 88
+   6 0000               P2_CHAR      = 79
+   7 0000               
+   8 0000               .data
+   9 0000               welcome_msg:
+  10 0000 0A202020	        .ascii   "\n   ************************"
+          2A2A2A2A
+          2A2A2A2A
+          2A2A2A2A
+          2A2A2A2A
+          2A2A2A2A
+  11 001c 0A202020	        .ascii   "\n   **    Connect Four    **"
+          2A2A2020
+          2020436F
+          6E6E6563
+          7420466F
+          75722020
+  12 0038 0A202020	        .asciiz  "\n   ************************\n"
+          2A2A2A2A
+          2A2A2A2A
+          2A2A2A2A
+          2A2A2A2A
+          2A2A2A2A
+  13 0056               
+  14 0056               
+  15 0056               user_input:
+  16 0056 0000    	        .word 4
+     0058 00000004
+  17 005c               
+  18 005c               p1_prompt:
+  19 005c 0A506C61	        .asciiz  "\nPlayer 1: select a row to place your coin (0-6 or -1 to quit):"
+          79657220
+          313A2073
+          656C6563
+          74206120
+          726F7720
+  20 009c               
+  21 009c               p2_prompt:
+  22 009c 0A506C61	        .asciiz  "\nPlayer 2: select a row to place your coin (0-6 or -1 to quit):"
+          79657220
+          323A2073
+          656C6563
+          74206120
+          726F7720
+  23 00dc               
+  24 00dc               game_board:
+  25 00dc 0A202020	        .ascii  "\n   0   1   2   3   4   5   6   "
+          30202020
+          31202020
+          32202020
+          33202020
+          34202020
+  26 00fc 0A2B2D2D	        .ascii  "\n+----+---+---+---+---+---+----+"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  27 011c 0A7C2B2D	        .ascii  "\n|+---+---+---+---+---+---+---+|"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  28 013c 0A7C7C20	        .ascii  "\n||   |   |   |   |   |   |   ||"
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+  29 015c 0A7C2B2D	        .ascii  "\n|+---+---+---+---+---+---+---+|"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  30 017c 0A7C7C20	        .ascii  "\n||   |   |   |   |   |   |   ||"
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+  31 019c 0A7C2B2D	        .ascii  "\n|+---+---+---+---+---+---+---+|"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  32 01bc 0A7C7C20	        .ascii  "\n||   |   |   |   |   |   |   ||"
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+  33 01dc 0A7C2B2D	        .ascii  "\n|+---+---+---+---+---+---+---+|"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  34 01fc 0A7C7C20	        .ascii  "\n||   |   |   |   |   |   |   ||"
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+  35 021c 0A7C2B2D	        .ascii  "\n|+---+---+---+---+---+---+---+|"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  36 023c 0A7C7C20	        .ascii  "\n||   |   |   |   |   |   |   ||"
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+  37 025c 0A7C2B2D	        .ascii  "\n|+---+---+---+---+---+---+---+|"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  38 027c 0A7C7C20	        .ascii  "\n||   |   |   |   |   |   |   ||"
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+          20207C20
+  39 029c 0A7C2B2D	        .ascii  "\n|+---+---+---+---+---+---+---+|"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  40 02bc 0A2B2D2D	        .ascii  "\n+----+---+---+---+---+---+----+"
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+          2D2D2B2D
+  41 02dc 0A202020	        .asciiz "\n   0   1   2   3   4   5   6   \n"
+          30202020
+          31202020
+          32202020
+          33202020
+          34202020
+  42 02fe               
+  43 02fe               illegal_col:
+  44 02fe 496C6C65	        .asciiz "Illegal column number."
+          67616C20
+          636F6C75
+          6D6E206E
+          756D6265
+          722E00  
+  45 0315               
+  46 0315               col_full:
+  47 0315 496C6C65	        .asciiz "Illegal move, no more room in that column.\n"
+          67616C20
+          6D6F7665
+          2C206E6F
+          206D6F72
+          6520726F
+  48 0341               
+  49 0341               tie_message:
+  50 0341 54686520	        .asciiz "The game ends in a tie."
+          67616D65
+          20656E64
+          7320696E
+          20612074
+          69652E00
+  51 0359               
+  52 0359               p1_win:
+  53 0359 0A506C61	        .asciiz "\nPlayer 1 wins!\n"
+          79657220
+          31207769
+          6E73210A
+          00      
+  54 036a               
+  55 036a               p2_win:
+  56 036a 0A506C61	        .asciiz "\nPlayer 2 wins!\n"
+          79657220
+          32207769
+          6E73210A
+          00      
+  57 037b               
+  58 037b               p1_quit:
+  59 037b 506C6179	        .asciiz "Player 1 quit."
+          65722031
+          20717569
+          742E00  
+  60 038a               
+  61 038a               p2_quit:
+  62 038a 506C6179	        .asciiz "Player 2 quit."
+          65722032
+          20717569
+          742E00  
+  63 0399               
+  64 0000                       .text
+  65 0000                       .align	2
+  66 0000               	.globl	main
+  67 0000               
+  68 0000               
+  69 0000               #
+  70 0000               # Name:         main
+  71 0000               #
+  72 0000               # Description:  EXECUTION BEGINS HERE
+  73 0000               # Arguments:    none
+  74 0000               # Returns:      none
+  75 0000               # Destroys:     
+  76 0000               #
+  77 0000               
+  78 0000               main:
+  79 0000                       # print welcome message and the initial board           
+  80 0000 3C040000	        la      $a0, welcome_msg
+     0004 34840000
+  81 0008 0C0000F7	        jal     print_string
+  82 000c                       
+  83 000c 3C040000	        la      $a0, game_board
+     0010 34840000
+  84 0014 0C0000F7	        jal     print_string
+  85 0018               
+  86 0018 20100000	        addi	$s0, $zero, 0			# $s0 = zero1 + 0
+  87 001c 20110000	        addi	$s1, $zero, 0			# $s0 = zero1 + 0
+  88 0020                       
+  89 0020               
+  90 0020               
+  91 0020               
+  92 0020               play:
+  93 0020 0C000093	        jal     check_full
+  94 0024 0C000013	        jal     ask_p1_input
+  95 0028 3C040000	        la      $a0, game_board
+     002c 34840000
+  96 0030 0C0000F7	        jal     print_string
+  97 0034 0C000038	        jal     ask_p2_input
+  98 0038 3C040000	        la      $a0, game_board
+     003c 34840000
+  99 0040 0C0000F7	        jal     print_string
+ 100 0044 08000008	        j       play
+ 101 0048               
+ 102 0048               
+ 103 0048               game_done:
+ 104 0048 08000102	        j       exit_prog			# jump to print_string
+ 105 004c               
+ 106 004c               
+ 107 004c               #
+ 108 004c               # Name:         ask_p1_input
+ 109 004c               #
+ 110 004c               # Description:  EXECUTION BEGINS HERE
+ 111 004c               # Arguments:    none
+ 112 004c               # Returns:      none
+ 113 004c               # Destroys:     
+ 114 004c               #
+ 115 004c               ask_p1_input:
+ 116 004c                       # saving return register on stack
+ 117 004c 23BDFFFC	        addi    $sp, $sp, -4
+ 118 0050 AFB00000	        sw      $s0, 0($sp)
+ 119 0054 23BDFFFC	        addi    $sp, $sp,-4
+ 120 0058 AFBF0000	        sw      $ra, 0($sp)
+ 121 005c               
+ 122 005c 3C040000	        la      $a0, p1_prompt
+     0060 34840000
+ 123 0064 0C0000F7	        jal     print_string
+ 124 0068               
+ 125 0068 34020005	        li      $v0, 5         #load op code for getting a string from the user into register $v0
+ 126 006c 0000000C	        syscall                 #reads register $v0 for op code, sees 8 and asks user to input an int
+ 127 0070               
+ 128 0070 00402021	        move 	$a0, $v0		# $a0 = $v0
+ 129 0074               
+ 130 0074 2008FFFF	        addi    $t0, $zero, -1
+ 131 0078                       
+ 132 0078 108800DB	        beq     $a0, $t0, exit_p1
+ 133 007c               
+ 134 007c                       #slt     $v0, $a0, $zero         # $v0 = a0 < $zero
+ 135 007c                       #bne     $v0, $zero, exit_prog   # if $v0 == $zero then exit prog
+ 136 007c 20020006	        addi    $v0, $zero, 6
+ 137 0080 0044482A	        slt     $t1 ,$v0, $a0
+ 138 0084 15200002	        bne     $t1, $zero, illegal_cl
+ 139 0088 0088482A	        slt     $t1, $a0, $t0
+ 140 008c 1120000A	        beq     $t1, $zero, skip_print_2
+ 141 0090               illegal_cl:
+ 142 0090 3C0D0000	        la      $t5, illegal_col
+     0094 35AD0000
+ 143 0098 01A02021	        move    $a0, $t5
+ 144 009c 34020004	        li 	$v0, PRINT_STRING
+ 145 00a0 0000000C	        syscall
+ 146 00a4                       # restoring return register from stack
+ 147 00a4 8FBF0000	        lw      $ra,0($sp)
+ 148 00a8 23BD0004	        addi    $sp,$sp,4
+ 149 00ac 8FB00000	        lw      $s0,0($sp)
+ 150 00b0 23BD0004	        addi    $sp,$sp,4
+ 151 00b4 08000013	        j       ask_p1_input		
+ 152 00b8               skip_print_2:
+ 153 00b8               
+ 154 00b8 20050000	        addi    $a1, $zero, 0   # setting arg to be p2 (1)
+ 155 00bc               
+ 156 00bc 20020000	        addi    $v0, $zero, 0           # $v0 = 1 if col is full
+ 157 00c0 0C00005C	        jal     place_piece
+ 158 00c4               
+ 159 00c4 10400001	        beq     $v0, $zero, rest_and_ret_p1
+ 160 00c8 08000013	        j       ask_p1_input
+ 161 00cc               
+ 162 00cc               rest_and_ret_p1:
+ 163 00cc               
+ 164 00cc                       #jal		check_right_diagonal				# jump to target and save position to $ra
+ 165 00cc                       
+ 166 00cc               
+ 167 00cc                       # restoring return register from stack
+ 168 00cc 8FBF0000	        lw      $ra,0($sp)
+ 169 00d0 23BD0004	        addi    $sp,$sp,4
+ 170 00d4 8FB00000	        lw      $s0,0($sp)
+ 171 00d8 23BD0004	        addi    $sp,$sp,4
+ 172 00dc               
+ 173 00dc 03E00008	        jr      $ra
+ 174 00e0               
+ 175 00e0               #####################################################
+ 176 00e0               
+ 177 00e0               #
+ 178 00e0               # Name:         ask_p2_input
+ 179 00e0               #
+ 180 00e0               # Description:  EXECUTION BEGINS HERE
+ 181 00e0               # Arguments:    none
+ 182 00e0               # Returns:      none
+ 183 00e0               # Destroys:     
+ 184 00e0               #
+ 185 00e0               ask_p2_input:
+ 186 00e0                       # saving return register on stack
+ 187 00e0 23BDFFFC	        addi    $sp, $sp, -4
+ 188 00e4 AFB00000	        sw      $s0, 0($sp)
+ 189 00e8 23BDFFFC	        addi    $sp, $sp,-4
+ 190 00ec AFBF0000	        sw      $ra, 0($sp)
+ 191 00f0               
+ 192 00f0 3C040000	        la      $a0, p2_prompt
+     00f4 34840000
+ 193 00f8 0C0000F7	        jal     print_string
+ 194 00fc               
+ 195 00fc 34020005	        li      $v0, 5         #load op code for getting a string from the user into register $v0
+ 196 0100 0000000C	        syscall                 #reads register $v0 for op code, sees 8 and asks user to input an int
+ 197 0104               
+ 198 0104 00402021	        move 	$a0, $v0		# $a0 = $v0
+ 199 0108               
+ 200 0108 2008FFFF	        addi    $t0, $zero, -1
+ 201 010c                       
+ 202 010c 108800BA	        beq     $a0, $t0, exit_p2
+ 203 0110               
+ 204 0110                       #slt     $v0, $a0, $zero         # $v0 = a0 < $zero
+ 205 0110                       #bne     $v0, $zero, exit_prog   # if $v0 == $zero then exit prog
+ 206 0110 20020006	        addi    $v0, $zero, 6
+ 207 0114 0044482A	        slt     $t1 ,$v0, $a0
+ 208 0118 0088482A	        slt     $t1, $a0, $t0
+ 209 011c 1120000A	        beq     $t1, $zero, skip_print
+ 210 0120 3C0D0000	        la      $t5, illegal_col
+     0124 35AD0000
+ 211 0128 01A02021	        move    $a0, $t5
+ 212 012c 34020004	        li 	$v0, PRINT_STRING
+ 213 0130 0000000C	        syscall
+ 214 0134                       # restoring return register from stack
+ 215 0134 8FBF0000	        lw      $ra,0($sp)
+ 216 0138 23BD0004	        addi    $sp,$sp,4
+ 217 013c 8FB00000	        lw      $s0,0($sp)
+ 218 0140 23BD0004	        addi    $sp,$sp,4
+ 219 0144 08000038	        j       ask_p2_input		
+ 220 0148               skip_print:
+ 221 0148 20050001	        addi    $a1, $zero, 1   # setting arg to be p2 (1)
+ 222 014c               
+ 223 014c 20020000	        addi    $v0, $zero, 0           # $v0 = 1 if col is full
+ 224 0150 0C00005C	        jal     place_piece
+ 225 0154               
+ 226 0154 10400001	        beq     $v0, $zero, rest_and_ret_p2
+ 227 0158 08000038	        j       ask_p2_input
+ 228 015c               
+ 229 015c               rest_and_ret_p2:
+ 230 015c                       # restoring return register from stack
+ 231 015c 8FBF0000	        lw      $ra,0($sp)
+ 232 0160 23BD0004	        addi    $sp,$sp,4
+ 233 0164 8FB00000	        lw      $s0,0($sp)
+ 234 0168 23BD0004	        addi    $sp,$sp,4
+ 235 016c               
+ 236 016c 03E00008	        jr      $ra
+ 237 0170               
+ 238 0170               ###############################################
+ 239 0170               
+ 240 0170               #
+ 241 0170               # Name:         place_piece
+ 242 0170               #
+ 243 0170               # Description:  EXECUTION BEGINS HERE
+ 244 0170               # Arguments:    $a0: rowNum $a1: playerNum
+ 245 0170               # Returns:      none
+ 246 0170               # Destroys:     
+ 247 0170               #
+ 248 0170               place_piece:
+ 249 0170                       # saving return register on stack
+ 250 0170 23BDFFFC	        addi    $sp, $sp, -4
+ 251 0174 AFB00000	        sw      $s0, 0($sp)
+ 252 0178 23BDFFFC	        addi    $sp, $sp,-4
+ 253 017c AFBF0000	        sw      $ra, 0($sp)
+ 254 0180                       #################################
+ 255 0180               
+ 256 0180                       # $a0: rowNum $a1:playerNum
+ 257 0180 20080004	        addi	$t0, $zero, 4			# $t0 = $zero + 0
+ 258 0184                       # get initial index of the row
+ 259 0184 01040018	        mult	$t0, $a0			# $t0 * $t1 = Hi and Lo registers
+ 260 0188 00005012	        mflo	$t2					# copy Lo to $t2
+ 261 018c               
+ 262 018c 214A01A4	        addi	$t2, $t2, 420			# $t2 = $t2 + 96
+ 263 0190                       
+ 264 0190                       # set the pointer to the row on the game board
+ 265 0190 3C090000	        la      $t1, game_board		# copy game board add to $t1
+     0194 35290000
+ 266 0198 012A4820	        add     $t1, $t2
+ 267 019c                       
+ 268 019c               
+ 269 019c                       #la      $t3, user_input		# MAYBE DELETE?
+ 270 019c                       #sw      $t2, 0($t3)		# MAYBE DELETE?
+ 271 019c                       
+ 272 019c                       
+ 273 019c                       # if player 1, set $t2 to 79('O') if p2 then set to 88('X')
+ 274 019c               set_player_char:
+ 275 019c 200C0180	        addi    $t4, $zero, 384         #counter to see if col is full
+ 276 01a0               
+ 277 01a0 200A004F	        addi	$t2, $zero, P2_CHAR			# $t0 = $t1 + 0
+ 278 01a4 00A02021	        move    $a0, $a1
+ 279 01a8 10A00087	        beq     $a1, $zero, set_p1_char	# if $a0 == $zero then target
+ 280 01ac                       
+ 281 01ac               place_piece_cont:
+ 282 01ac 812B0000	        lb      $t3, 0($t1)		# 
+ 283 01b0 20080020	        addi	$t0, $zero, SPACE_CHAR			# $t0 = $zero + SPACE_CHAR
+ 284 01b4               
+ 285 01b4 15680009	        bne     $t3, $t0, increment
+ 286 01b8 A12A0000	        sb      $t2, 0($t1)		# 
+ 287 01bc 01202821	        move 	$a1, $t1		# $a1 = $t1
+ 288 01c0 01403021	        move 	$a2, $t2		# $a2 = $t2
+ 289 01c4                       #check horizontal
+ 290 01c4 0C000082	        jal     check_if_win            
+ 291 01c8               
+ 292 01c8               ret_to_input:
+ 293 01c8                       ### restoring return register from stack ####
+ 294 01c8 8FBF0000	        lw      $ra,0($sp)
+ 295 01cc 23BD0004	        addi    $sp,$sp,4
+ 296 01d0 8FB00000	        lw      $s0,0($sp)
+ 297 01d4 23BD0004	        addi    $sp,$sp,4
+ 298 01d8                       #############################################
+ 299 01d8 03E00008	        jr      $ra
+ 300 01dc               
+ 301 01dc               increment:
+ 302 01dc 20020000	        addi    $v0, $zero, 0           # $v0 = 1 if col is full
+ 303 01e0 2129FFE0	        addi    $t1, $t1, -32			# $t1 = $t1 -32
+ 304 01e4 218CFFE0	        addi    $t4, $t4, -32
+ 305 01e8 0180582A	        slt     $t3, $t4, $zero
+ 306 01ec 11600005	        beq     $t3, $zero, go_back
+ 307 01f0               
+ 308 01f0 3C040000	        la	$a0, col_full		#
+     01f4 34840000
+ 309 01f8 0C0000F7	        jal     print_string
+ 310 01fc 20020001	        addi    $v0, $zero, 1           # $v0 = 1 if col is full
+ 311 0200 08000072	        j       ret_to_input
+ 312 0204               go_back:
+ 313 0204 0800006B	        j       place_piece_cont
+ 314 0208                   
+ 315 0208               
+ 316 0208               #
+ 317 0208               # Name:         check_if_win
+ 318 0208               #
+ 319 0208               # Description:  EXECUTION BEGINS HERE
+ 320 0208               # Arguments:    $a0: playerNum
+ 321 0208               # Returns:      none
+ 322 0208               # Destroys:     
+ 323 0208               #
+ 324 0208               check_if_win:
+ 325 0208                        # saving return register on stack
+ 326 0208 23BDFFFC	        addi    $sp, $sp, -4
+ 327 020c AFB00000	        sw      $s0, 0($sp)
+ 328 0210 23BDFFFC	        addi    $sp, $sp,-4
+ 329 0214 AFBF0000	        sw      $ra, 0($sp)
+ 330 0218 23BDFFFC	        addi    $sp, $sp,-4
+ 331 021c AFA20000	        sw      $v0, 0($sp)
+ 332 0220                       #################################
+ 333 0220 0C0000A2	        jal     check_left_diagonal
+ 334 0224 0C0000B2	        jal     check_right_diagonal
+ 335 0228 0C0000D2	        jal     check_horizontal
+ 336 022c 0C0000C2	        jal     check_vertical
+ 337 0230               
+ 338 0230                       ### restoring return register from stack ####
+ 339 0230 8FA20000	        lw      $v0,0($sp)
+ 340 0234 23BD0004	        addi    $sp,$sp,4
+ 341 0238 8FBF0000	        lw      $ra,0($sp)
+ 342 023c 23BD0004	        addi    $sp,$sp,4
+ 343 0240 8FB00000	        lw      $s0,0($sp)
+ 344 0244 23BD0004	        addi    $sp,$sp,4
+ 345 0248                       #############################################
+ 346 0248 03E00008	        jr      $ra
+ 347 024c               
+ 348 024c                       # run after a player's turn
+ 349 024c                       # $a0: playerNum $a1: index_
+ 350 024c               
+ 351 024c               #
+ 352 024c               # Name:         check_full
+ 353 024c               #
+ 354 024c               # Description:  EXECUTION BEGINS HERE
+ 355 024c               # Arguments:    $a0: playerNum
+ 356 024c               # Returns:      none
+ 357 024c               # Destroys:     
+ 358 024c               #
+ 359 024c               check_full:
+ 360 024c 3C080000	        la      $t0, game_board
+     0250 35080000
+ 361 0254 21080064	        addi    $t0, 100
+ 362 0258 200A0020	        addi    $t2, $zero, SPACE_CHAR
+ 363 025c 81090000	        lb      $t1, 0($t0)
+ 364 0260 152A0003	        bne     $t1, $t2, increment_2
+ 365 0264 200A000A	        addi    $t2, $zero, NEWLINE
+ 366 0268 112A0003	        beq     $t1, $t2, print_full
+ 367 026c 03E00008	        jr      $ra
+ 368 0270               
+ 369 0270               increment_2:
+ 370 0270 21080004	        addi    $t0, $t0, 4
+ 371 0274 08000093	        j       check_full
+ 372 0278               
+ 373 0278               print_full:
+ 374 0278 3C040000	        la   $a0, tie_message
+     027c 34840000
+ 375 0280 080000F7	        j    print_string
+ 376 0284 08000102	        j    exit_prog
+ 377 0288               
+ 378 0288               #
+ 379 0288               # Name:         check_left_diagonal
+ 380 0288               #
+ 381 0288               # Description:  EXECUTION BEGINS HERE
+ 382 0288               # Arguments:    $a0: playerNum,  $a1: start address , $a2: playerpiece
+ 383 0288               # Returns:      none
+ 384 0288               # Destroys:     
+ 385 0288               #
+ 386 0288               check_left_diagonal:
+ 387 0288               #$a0: playerNum, $a1: startAddress, $a2: PLAYER_PIECE
+ 388 0288                       #returns: whether the player won or not
+ 389 0288 00A04021	        move 	$t0, $a1		# $t0 = $a1
+ 390 028c 00A06021	        move 	$t4, $a1		# $t4 = $a1
+ 391 0290 200A0003	        addi    $t2, $zero, 3
+ 392 0294 200B0000	        addi    $t3, $zero, 0
+ 393 0298               
+ 394 0298               check_left_d_pos:
+ 395 0298 2108003C	        addi	$t0, $t0, 60			# $t0 = $t0 + 68
+ 396 029c 81090000	        lb	$t1, 0($t0)		# 
+ 397 02a0 15260003	        bne	$t1, $a2, check_left_d_neg	# if $t1 != $t1 then end
+ 398 02a4 216B0001	        addi    $t3, $t3, 1
+ 399 02a8 116A0037	        beq     $t3, $t2, print_win
+ 400 02ac 080000A6	        j       check_left_d_pos
+ 401 02b0               
+ 402 02b0               check_left_d_neg:
+ 403 02b0 218CFFC4	        addi	$t4, $t4, -60			# $t0 = $t0 + 68
+ 404 02b4 81890000	        lb	$t1, 0($t4)		# 
+ 405 02b8 15260042	        bne	$t1, $a2, end	# if $t1 != $t1 then end
+ 406 02bc 216B0001	        addi    $t3, $t3, 1
+ 407 02c0 116A0031	        beq     $t3, $t2, print_win
+ 408 02c4 080000AC	        j       check_left_d_neg
+ 409 02c8               
+ 410 02c8               #
+ 411 02c8               # Name:         check_right_diagonal
+ 412 02c8               #
+ 413 02c8               # Description:  EXECUTION BEGINS HERE
+ 414 02c8               # Arguments:    a0: playerNum, $a1: startAddress, $a2: PLAYER_PIECE
+ 415 02c8               # Returns:      v0: whether the player won or not
+ 416 02c8               # Destroys:     
+ 417 02c8               #
+ 418 02c8               check_right_diagonal:
+ 419 02c8               
+ 420 02c8 00A04021	        move 	$t0, $a1		# $t0 = $a1
+ 421 02cc 00A06021	        move 	$t4, $a1		# $t4 = $a1
+ 422 02d0 200A0003	        addi    $t2, $zero, 3
+ 423 02d4 200B0000	        addi    $t3, $zero, 0
+ 424 02d8               
+ 425 02d8               check_right_d_pos:
+ 426 02d8 21080044	        addi	$t0, $t0, 68			# $t0 = $t0 + 68
+ 427 02dc 81090000	        lb	$t1, 0($t0)		# 
+ 428 02e0 15260003	        bne	$t1, $a2, check_right_d_neg	# if $t1 != $t1 then end
+ 429 02e4 216B0001	        addi    $t3, $t3, 1
+ 430 02e8 116A0027	        beq     $t3, $t2, print_win
+ 431 02ec 080000B6	        j       check_right_d_pos
+ 432 02f0               
+ 433 02f0               check_right_d_neg:
+ 434 02f0 218CFFBC	        addi	$t4, $t4, -68			# $t0 = $t0 + 68
+ 435 02f4 81890000	        lb	$t1, 0($t4)		# 
+ 436 02f8 15260032	        bne	$t1, $a2, end	# if $t1 != $t1 then end
+ 437 02fc 216B0001	        addi    $t3, $t3, 1
+ 438 0300 116A0021	        beq     $t3, $t2, print_win
+ 439 0304 080000BC	        j       check_right_d_neg
+ 440 0308               
+ 441 0308               
+ 442 0308               #
+ 443 0308               # Name:         check_vertical
+ 444 0308               #
+ 445 0308               # Description:  EXECUTION BEGINS HERE
+ 446 0308               # Arguments:    none
+ 447 0308               # Returns:      none
+ 448 0308               # Destroys:     
+ 449 0308               #
+ 450 0308               check_vertical:
+ 451 0308               #$a0: playerNum, $a1: startAddress, $a2: PLAYER_PIECE
+ 452 0308                       #returns: whether the player won or not
+ 453 0308 00A04021	        move 	$t0, $a1		# $t0 = $a1
+ 454 030c 00A06021	        move 	$t4, $a1		# $t4 = $a1
+ 455 0310 200A0003	        addi    $t2, $zero, 3
+ 456 0314 200B0000	        addi    $t3, $zero, 0
+ 457 0318               
+ 458 0318               check_down_vert:
+ 459 0318 21080040	        addi	$t0, $t0, 64			# $t0 = $t0 + 68
+ 460 031c 81090000	        lb	$t1, 0($t0)		# 
+ 461 0320 15260003	        bne	$t1, $a2, check_up_vert	# if $t1 != $t1 then end
+ 462 0324 216B0001	        addi    $t3, $t3, 1
+ 463 0328 116A0017	        beq     $t3, $t2, print_win
+ 464 032c 080000C6	        j       check_down_vert
+ 465 0330               
+ 466 0330               check_up_vert:
+ 467 0330 218CFFC0	        addi	$t4, $t4, -64			# $t0 = $t0 + 68
+ 468 0334 81890000	        lb	$t1, 0($t4)		# 
+ 469 0338 15260022	        bne	$t1, $a2, end	# if $t1 != $t1 then end
+ 470 033c 216B0001	        addi    $t3, $t3, 1
+ 471 0340 116A0011	        beq     $t3, $t2, print_win
+ 472 0344 080000CC	        j       check_up_vert
+ 473 0348               
+ 474 0348               #
+ 475 0348               # Name:         check_horizontal
+ 476 0348               #
+ 477 0348               # Description:  EXECUTION BEGINS HERE
+ 478 0348               # Arguments:    none
+ 479 0348               # Returns:      none
+ 480 0348               # Destroys:     
+ 481 0348               #
+ 482 0348               check_horizontal:
+ 483 0348               #$a0: playerNum, $a1: startAddress, $a2: PLAYER_PIECE
+ 484 0348                       #returns: whether the player won or not
+ 485 0348 00A04021	        move 	$t0, $a1		# $t0 = $a1
+ 486 034c 00A06021	        move 	$t4, $a1		# $t4 = $a1
+ 487 0350 200A0003	        addi    $t2, $zero, 3
+ 488 0354 200B0000	        addi    $t3, $zero, 0
+ 489 0358               
+ 490 0358               check_hor_pos:
+ 491 0358 21080004	        addi	$t0, $t0, 4			# $t0 = $t0 + 68
+ 492 035c 81090000	        lb	$t1, 0($t0)		# 
+ 493 0360 15260003	        bne	$t1, $a2, check_hor_neg	# if $t1 != $t1 then end
+ 494 0364 216B0001	        addi    $t3, $t3, 1
+ 495 0368 116A0007	        beq     $t3, $t2, print_win
+ 496 036c 080000D6	        j       check_hor_pos
+ 497 0370               
+ 498 0370               check_hor_neg:
+ 499 0370 218CFFFC	        addi	$t4, $t4, -4			# $t0 = $t0 + 68
+ 500 0374 81890000	        lb	$t1, 0($t4)		# 
+ 501 0378 15260012	        bne	$t1, $a2, end	# if $t1 != $t1 then end
+ 502 037c 216B0001	        addi    $t3, $t3, 1
+ 503 0380 116A0001	        beq     $t3, $t2, print_win
+ 504 0384 080000DC	        j       check_hor_neg
+ 505 0388               
+ 506 0388               #
+ 507 0388               # Name:         print_win
+ 508 0388               #
+ 509 0388               # Description:  EXECUTION BEGINS HERE
+ 510 0388               # Arguments:    $a0: playerNum
+ 511 0388               # Returns:      none
+ 512 0388               # Destroys:     
+ 513 0388               #
+ 514 0388               print_win:
+ 515 0388 10800007	        beq     $a0, $zero, p1_win_msg
+ 516 038c 3C040000	        la      $a0, game_board
+     0390 34840000
+ 517 0394 0C0000F7	        jal     print_string
+ 518 0398 3C040000	        la      $a0, p2_win
+     039c 34840000
+ 519 03a0 0C0000F7	        jal     print_string
+ 520 03a4 08000102	        j       exit_prog
+ 521 03a8               p1_win_msg:
+ 522 03a8 3C040000	        la      $a0, game_board
+     03ac 34840000
+ 523 03b0 0C0000F7	        jal     print_string
+ 524 03b4 3C040000	        la      $a0, p1_win
+     03b8 34840000
+ 525 03bc 0C0000F7	        jal     print_string
+ 526 03c0 08000102	        j       exit_prog
+ 527 03c4               
+ 528 03c4               #
+ 529 03c4               # Name:         end
+ 530 03c4               #
+ 531 03c4               # Description:  EXECUTION BEGINS HERE
+ 532 03c4               # Arguments:    none
+ 533 03c4               # Returns:      none
+ 534 03c4               # Destroys:     
+ 535 03c4               #
+ 536 03c4               end:
+ 537 03c4 03E00008	        jr $ra
+ 538 03c8               
+ 539 03c8               
+ 540 03c8               #
+ 541 03c8               # Name:         set_p1_char
+ 542 03c8               #
+ 543 03c8               # Description:  EXECUTION BEGINS HERE
+ 544 03c8               # Arguments:    none
+ 545 03c8               # Returns:      none
+ 546 03c8               # Destroys:     
+ 547 03c8               #
+ 548 03c8               set_p1_char:
+ 549 03c8 200A0058	        addi    $t2, $zero, P1_CHAR			# $t0 = $t1 + 0
+ 550 03cc 0800006B	        j       place_piece_cont
+ 551 03d0               
+ 552 03d0               print_exc:
+ 553 03d0 3C0D0000	        la      $t5, illegal_col
+     03d4 35AD0000
+ 554 03d8 01A02021	        move    $a0, $t5
+ 555 03dc               
+ 556 03dc               
+ 557 03dc               #
+ 558 03dc               # Name:         print_string
+ 559 03dc               #
+ 560 03dc               # Description:  EXECUTION BEGINS HERE
+ 561 03dc               # Arguments:    none
+ 562 03dc               # Returns:      none
+ 563 03dc               # Destroys:     
+ 564 03dc               #
+ 565 03dc               print_string:
+ 566 03dc 34020004	        li 	$v0, PRINT_STRING
+ 567 03e0 0000000C	        syscall			#print a0
+ 568 03e4 03E00008	        jr      $ra
+ 569 03e8               
+ 570 03e8               exit_p1:
+ 571 03e8 3C040000	        la      $a0, p1_quit
+     03ec 34840000
+ 572 03f0 0C0000F7	        jal       print_string
+ 573 03f4 08000102	        j       exit_prog
+ 574 03f8               
+ 575 03f8               exit_p2:
+ 576 03f8 3C040000	        la      $a0, p2_quit
+     03fc 34840000
+ 577 0400 0C0000F7	        jal       print_string
+ 578 0404 08000102	        j       exit_prog
+ 579 0408               #
+ 580 0408               # Name:         exit_prog
+ 581 0408               #
+ 582 0408               # Description:  exits the program gracefully
+ 583 0408               # Arguments:    none
+ 584 0408               # Returns:      none
+ 585 0408               # Destroys:     
+ 586 0408               #
+ 587 0408               exit_prog:
+ 588 0408 3402000A	        li      $v0, 10 		# $v0  10= 
+ 589 040c 0000000C	        syscall
+
+
+NEWLINE               = 0000000A   
+P1_CHAR               = 00000058   
+P2_CHAR               = 0000004F   
+PRINT_STRING          = 00000004   
+SPACE_CHAR            = 00000020   
+ask_p1_input            0000004C R  text 
+ask_p2_input            000000E0 R  text 
+check_down_vert         00000318 R  text 
+check_full              0000024C R  text 
+check_hor_neg           00000370 R  text 
+check_hor_pos           00000358 R  text 
+check_horizontal        00000348 R  text 
+check_if_win            00000208 R  text 
+check_left_d_neg        000002B0 R  text 
+check_left_d_pos        00000298 R  text 
+check_left_diagonal     00000288 R  text 
+check_right_d_neg       000002F0 R  text 
+check_right_d_pos       000002D8 R  text 
+check_right_diagonal    000002C8 R  text 
+check_up_vert           00000330 R  text 
+check_vertical          00000308 R  text 
+col_full                00000315 R  data 
+end                     000003C4 R  text 
+exit_p1                 000003E8 R  text 
+exit_p2                 000003F8 R  text 
+exit_prog               00000408 R  text 
+game_board              000000DC R  data 
+game_done               00000048 R  text 
+go_back                 00000204 R  text 
+illegal_cl              00000090 R  text 
+illegal_col             000002FE R  data 
+increment               000001DC R  text 
+increment_2             00000270 R  text 
+main                    00000000 RG text 
+p1_prompt               0000005C R  data 
+p1_quit                 0000037B R  data 
+p1_win                  00000359 R  data 
+p1_win_msg              000003A8 R  text 
+p2_prompt               0000009C R  data 
+p2_quit                 0000038A R  data 
+p2_win                  0000036A R  data 
+place_piece             00000170 R  text 
+place_piece_cont        000001AC R  text 
+play                    00000020 R  text 
+print_exc               000003D0 R  text 
+print_full              00000278 R  text 
+print_string            000003DC R  text 
+print_win               00000388 R  text 
+rest_and_ret_p1         000000CC R  text 
+rest_and_ret_p2         0000015C R  text 
+ret_to_input            000001C8 R  text 
+set_p1_char             000003C8 R  text 
+set_player_char         0000019C R  text 
+skip_print              00000148 R  text 
+skip_print_2            000000B8 R  text 
+tie_message             00000341 R  data 
+user_input              00000058 R  data 
+welcome_msg             00000000 R  data 

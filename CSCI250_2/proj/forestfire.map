@@ -1,0 +1,120 @@
+Load map
+========
+
+Module:  forestfire.obj
+ Text segment:  796 bytes, load point 0x00400000
+ Data segment:  912 bytes, load point 0x10000000
+ Symbols:
+                 Name Section Mode    Value
+            start_sim   Text   R   0x004000f8
+           game_board   Data   RG  0x10000133
+          print_error   Text   R   0x00400300
+                 TREE          A   0x00000074
+           clear_cols   Text   R   0x004002c4
+                 EAST          A   0x00000045
+                 WEST          A   0x00000057
+            read_cols   Text   R   0x004001f8
+           clear_rows   Text   R   0x004002d8
+           grid_error   Data   R   0x1000004e
+          welcome_msg   Data   R   0x10000000
+              P2_CHAR          A   0x0000004f
+           skip_error   Text   R   0x004000bc
+            read_rows   Text   R   0x00400240
+            exit_prog   Text   R   0x00400314
+           wind_error   Data   R   0x1000008e
+             burn_fun   Text   R   0x00400280
+    reset_col_counter   Text   R   0x004001f4
+             sim_loop   Text   R   0x0040011c
+           gen_header   Data   RG  0x10000032
+           char_error   Data   RG  0x100000ad
+            gen_error   Data   R   0x10000068
+           inidic_fun   Text   R   0x00400288
+                NORTH          A   0x0000004e
+                 size   Data   RG  0x1000038c
+          clear_board   Text   R   0x00400290
+  reset_clear_counter   Text   R   0x004002bc
+                  set   Text   R   0x00400150
+                SOUTH          A   0x00000053
+         PRINT_STRING          A   0x00000004
+         print_string   Text   R   0x00400308
+            INDICATOR          A   0x00000069
+         set_to_begin   Text   R   0x004001b8
+                 main   Text   RG  0x00400000
+                 PIPE          A   0x0000007c
+         input_buffer   Data   RG  0x100000cf
+               PERIOD          A   0x0000002e
+           gen_half_1   Data   R   0x10000040
+           gen_half_2   Data   R   0x10000047
+           SPACE_CHAR          A   0x00000020
+              end_sim   Text   R   0x004001a0
+           done_check   Text   R   0x0040022c
+       game_board_cpy   Data   RG  0x1000025f
+              NEWLINE          A   0x0000000a
+             tree_fun   Text   R   0x00400278
+              P1_CHAR          A   0x00000058
+               HYPHEN          A   0x0000002d
+                 skip   Text   R   0x00400140
+                 BURN          A   0x00000042
+            PLUS_SIGN          A   0x0000002b
+
+Module:  initialize.obj
+ Text segment:  416 bytes, load point 0x0040031c
+ Symbols:
+                 Name Section Mode    Value
+                 TREE          A   0x00000074
+    after_footer_loop   Text   R   0x00400470
+           skip_check   Text   R   0x004003fc
+          header_loop   Text   R   0x00400354
+             row_loop   Text   R   0x0040039c
+  create_board_header   Text   RG  0x0040031c
+            INDICATOR          A   0x00000069
+             col_loop   Text   R   0x004003cc
+                 PIPE          A   0x0000007c
+    after_header_loop   Text   R   0x00400370
+               PERIOD          A   0x0000002e
+           SPACE_CHAR          A   0x00000020
+              NEWLINE          A   0x0000000a
+               HYPHEN          A   0x0000002d
+          footer_loop   Text   R   0x00400454
+                 BURN          A   0x00000042
+            PLUS_SIGN          A   0x0000002b
+
+Module:  logic.obj
+ Text segment:  524 bytes, load point 0x004004bc
+ Symbols:
+                 Name Section Mode    Value
+             go_south   Text   R   0x0040061c
+   replace_inidicator   Text   R   0x004005b4
+         skip_replace   Text   R   0x004005bc
+         burning_case   Text   RG  0x004004bc
+                 TREE          A   0x00000074
+         go_west_skip   Text   R   0x004006c4
+                 EAST          A   0x00000045
+                 WEST          A   0x00000057
+        go_south_skip   Text   R   0x00400648
+        go_north_skip   Text   R   0x00400684
+       indicator_case   Text   RG  0x00400578
+                NORTH          A   0x0000004e
+            tree_case   Text   RG  0x00400578
+                SOUTH          A   0x00000053
+            INDICATOR          A   0x00000069
+                 east   Text   R   0x004005e4
+                 west   Text   R   0x004005ec
+              go_east   Text   R   0x00400688
+              go_west   Text   R   0x004006a8
+               PERIOD          A   0x0000002e
+     burning_case_end   Text   R   0x00400558
+                north   Text   R   0x004005f8
+        tree_case_end   Text   R   0x00400600
+             go_north   Text   R   0x0040064c
+                south   Text   R   0x004005f0
+         go_east_skip   Text   R   0x004006a4
+    burning_case_body   Text   R   0x004004d8
+                 BURN          A   0x00000042
+
+Module:  r2k_startup.obj
+ Text segment:  36 bytes, load point 0x004006c8
+ Symbols:
+                 Name Section Mode    Value
+            SYS_EXIT2          A   0x00000011
+       __r2k__entry__   Text   RG  0x004006cc

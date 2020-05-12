@@ -1,0 +1,525 @@
+   1 0000               
+   2 0000               PRINT_STRING = 4		# arg for syscall to tell it to write
+   3 0000               SPACE_CHAR   = 32
+   4 0000               NEWLINE      = 10
+   5 0000               PIPE         = 124
+   6 0000               PLUS_SIGN    = 43
+   7 0000               HYPHEN       = 45
+   8 0000               P1_CHAR      = 88
+   9 0000               P2_CHAR      = 79
+  10 0000               PERIOD       = 46
+  11 0000               TREE   = 116
+  12 0000               BURN   = 66
+  13 0000               INDICATOR = 105
+  14 0000               EAST   = 69
+  15 0000               WEST   = 87
+  16 0000               NORTH  = 78
+  17 0000               SOUTH  = 83
+  18 0000               
+  19 0000               .data
+  20 0000               welcome_msg:
+  21 0000 2B2D2D2D	        .ascii   "+-------------+"
+          2D2D2D2D
+          2D2D2D2D
+          2D2D2B  
+  22 000f 0A7C2046	        .ascii   "\n| FOREST FIRE |"
+          4F524553
+          54204649
+          5245207C
+  23 001f 0A2B2D2D	        .asciiz  "\n+-------------+\n\n"
+          2D2D2D2D
+          2D2D2D2D
+          2D2D2D2B
+          0A0A00  
+  24 0032               
+  25 0032               gen_header:
+  26 0032 3D3D3D3D	        .asciiz  "==== #0 ====\n"
+          20233020
+          3D3D3D3D
+          0A00    
+  27 0040               
+  28 0040               gen_half_1:
+  29 0040 3D3D3D3D	        .asciiz  "==== #"
+          202300  
+  30 0047               gen_half_2:
+  31 0047 203D3D3D	        .asciiz  " ====\n"
+          3D0A00  
+  32 004e               
+  33 004e               grid_error:
+  34 004e 4552524F	        .asciiz  "ERROR: invalid grid size\n"
+          523A2069
+          6E76616C
+          69642067
+          72696420
+          73697A65
+  35 0068               gen_error:
+  36 0068 4552524F	        .asciiz  "ERROR: invalid number of generations\n"
+          523A2069
+          6E76616C
+          6964206E
+          756D6265
+          72206F66
+  37 008e               wind_error:
+  38 008e 4552524F	        .asciiz  "ERROR: invalid wind direction\n"
+          523A2069
+          6E76616C
+          69642077
+          696E6420
+          64697265
+  39 00ad               char_error:
+  40 00ad 4552524F	        .asciiz  "ERROR: invalid character in grid\n"
+          523A2069
+          6E76616C
+          69642063
+          68617261
+          63746572
+  41 00cf               
+  42 00cf               input_buffer:
+  43 00cf 00000000	        .space  100
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  44 0133                       
+  45 0133               game_board:
+  46 0133 00000000	        .space  100
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  47 0197 00000000	        .space  100
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  48 01fb 00000000	        .space  100
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  49 025f               
+  50 025f               game_board_cpy:
+  51 025f 00000000	        .space  100
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  52 02c3 00000000	        .space  100
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  53 0327 00000000	        .space  100
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  54 038b               
+  55 038b 00      	size:   .word   1
+     038c 00000001
+  56 0390               
+  57 0000                       .text
+  58 0000                       .align	2
+  59 0000                       .globl	main
+  60 0000                       .globl  game_board
+  61 0000                       .globl  game_board_cpy
+  62 0000                       .globl  create_board_header
+  63 0000                       .globl  input_buffer
+  64 0000                       .globl  gen_header
+  65 0000                       .globl  burning_case
+  66 0000                       .globl  tree_case
+  67 0000                       .globl  indicator_case
+  68 0000                       .globl  size
+  69 0000                       .globl  char_error
+  70 0000               
+  71 0000               #
+  72 0000               # Name:         main
+  73 0000               #
+  74 0000               # Description:  EXECUTION BEGINS HERE
+  75 0000               # Arguments:    none
+  76 0000               # Returns:      none
+  77 0000               # Destroys:     
+  78 0000               #
+  79 0000               
+  80 0000               main:
+  81 0000                       # print welcome message and the initial board           
+  82 0000                       
+  83 0000 3C040000	        la      $a0, welcome_msg
+     0004 34840000
+  84 0008 0C0000C2	        jal     print_string
+  85 000c               
+  86 000c                       # read Grid Length
+  87 000c 34020005	        li      $v0, 5
+  88 0010 0000000C	        syscall
+  89 0014 00408021	        move    $s0, $v0             # s0 = GRID_SIZE
+  90 0018 3C080000	        la      $t0, size
+     001c 35080000
+  91 0020 AD100000	        sw      $s0, 0($t0)
+  92 0024               
+  93 0024 3C040000	        la      $a0, grid_error
+     0028 34840000
+  94 002c 34080004	        li      $t0, 4
+  95 0030 0208482A	        slt     $t1, $s0, $t0
+  96 0034 152000B2	        bne     $t1, $zero, print_error
+  97 0038 3408001E	        li      $t0, 30
+  98 003c 0110482A	        sgt     $t1, $s0, $t0
+  99 0040 152000AF	        bne     $t1, $zero, print_error
+ 100 0044               
+ 101 0044                       # read num of Generations
+ 102 0044 34020005	        li      $v0, 5
+ 103 0048 0000000C	        syscall
+ 104 004c 00408821	        move    $s1, $v0             #  s1 = GENERATIONS
+ 105 0050               
+ 106 0050 3C040000	        la      $a0, gen_error
+     0054 34840000
+ 107 0058 34080000	        li      $t0, 0
+ 108 005c 0228482A	        slt     $t1, $s1, $t0
+ 109 0060 152000A7	        bne     $t1, $zero, print_error
+ 110 0064 34080014	        li      $t0, 20
+ 111 0068 0111482A	        sgt     $t1, $s1, $t0
+ 112 006c 152000A4	        bne     $t1, $zero, print_error
+ 113 0070               
+ 114 0070                       # read Wind Direction
+ 115 0070 3C040000	        la      $a0, input_buffer    # a0 = &game_board
+     0074 34840000
+ 116 0078 34050003	        li      $a1, 3               # read 1 chars
+ 117 007c 34020008	        li      $v0, 8
+ 118 0080 0000000C	        syscall
+ 119 0084 3C040000	        la      $a0, input_buffer
+     0088 34840000
+ 120 008c 80920000	        lb      $s2, 0($a0)          # s2 = WIND_DIRECTION
+ 121 0090               
+ 122 0090 3C040000	        la      $a0, wind_error
+     0094 34840000
+ 123 0098 3408004E	        li      $t0, NORTH
+ 124 009c 11120007	        beq     $t0, $s2, skip_error
+ 125 00a0 34080053	        li      $t0, SOUTH
+ 126 00a4 11120005	        beq     $t0, $s2, skip_error
+ 127 00a8 34080045	        li      $t0, EAST
+ 128 00ac 11120003	        beq     $t0, $s2, skip_error
+ 129 00b0 34080057	        li      $t0, WEST
+ 130 00b4 11120001	        beq     $t0, $s2, skip_error
+ 131 00b8 080000C0	        j       print_error
+ 132 00bc               skip_error:
+ 133 00bc                       # read the actual grid (need a loop to actually read it)
+ 134 00bc 3C040000	        la      $a0, input_buffer      # a0 = &game_board
+     00c0 34840000
+ 135 00c4 02002821	        move    $a1, $s0               # read amount chars
+ 136 00c8 0C000000	        jal     create_board_header
+ 137 00cc               
+ 138 00cc                       ########   DONE PROCESSING INPUT ##################
+ 139 00cc               
+ 140 00cc                        # Print the header for the first generation
+ 141 00cc               
+ 142 00cc 3C040000	        la     $a0, gen_header
+     00d0 34840000
+ 143 00d4 0C0000C2	        jal    print_string
+ 144 00d8               
+ 145 00d8               
+ 146 00d8                       # print welcome message and the initial board           
+ 147 00d8               
+ 148 00d8 3C040000	        la      $a0, game_board
+     00dc 34840000
+ 149 00e0 0C0000C2	        jal     print_string
+ 150 00e4               
+ 151 00e4                       ###########   DONE WITH GEN 0 ###################
+ 152 00e4               
+ 153 00e4 02202021	        move    $a0, $s1    # a0 = GENERATIONS
+ 154 00e8 02002821	        move    $a1, $s0    # a1 = GRID_SIZE
+ 155 00ec 02403021	        move    $a2, $s2    # a2 = WIND_DIRECTION
+ 156 00f0 0C00003E	        jal     start_sim
+ 157 00f4               
+ 158 00f4 080000C5	        j exit_prog
+ 159 00f8               
+ 160 00f8               #
+ 161 00f8               # Name:         start_sim
+ 162 00f8               #
+ 163 00f8               # Description:  EXECUTION BEGINS HERE
+ 164 00f8               # Arguments:    $a0 - num of generations
+ 165 00f8               #               $a1 - Length of the grid
+ 166 00f8               #               $a2 - Wind direction
+ 167 00f8               # Returns:      
+ 168 00f8               # Destroys:     
+ 169 00f8               #
+ 170 00f8               start_sim:
+ 171 00f8 23BDFFF0	        addi	$sp,$sp,-16	# allocate space for the return address
+ 172 00fc AFBF000C	        sw	$ra,12($sp)	# store the ra on the stack
+ 173 0100 AFB00008	        sw	$s0,8($sp)	# store the ra on the stack
+ 174 0104 AFB10004	        sw	$s1,4($sp)	# store the ra on the stack
+ 175 0108 AFB20000	        sw      $s2,0($sp) 
+ 176 010c                       #########################
+ 177 010c 00808021	        move    $s0, $a0
+ 178 0110 00A09021	        move    $s2, $a1
+ 179 0114 34110001	        li      $s1, 1
+ 180 0118 34150001	        li      $s5, 1
+ 181 011c                       
+ 182 011c               sim_loop:
+ 183 011c 34080002	        li      $t0, 2
+ 184 0120 0208001A	        div     $s0, $t0
+ 185 0124 00004010	        mfhi    $t0            # gets s1 % s2 to figure out what board to analyze
+ 186 0128 15000005	        bne     $t0, $zero, skip
+ 187 012c 3C130000	        la      $s3, game_board_cpy # set to GEN - 1
+     0130 36730000
+ 188 0134 3C140000	        la      $s4, game_board
+     0138 36940000
+ 189 013c 08000054	        j       set
+ 190 0140               skip:
+ 191 0140 3C130000	        la      $s3, game_board     # set to GEN - 1 
+     0144 36730000
+ 192 0148 3C140000	        la      $s4, game_board_cpy
+     014c 36940000
+ 193 0150               set:
+ 194 0150 02602021	        move    $a0, $s3      # setting parameter so that the game board can be analyzed
+ 195 0154 02803821	        move    $a3, $s4
+ 196 0158                       # call set to begin here
+ 197 0158 0C00006E	        jal     set_to_begin
+ 198 015c 3C040000	        la      $a0, gen_half_1
+     0160 34840000
+ 199 0164 0C0000C2	        jal     print_string
+ 200 0168 34020001	        li      $v0, 1
+ 201 016c 02A02021	        move    $a0, $s5
+ 202 0170 0000000C	        syscall
+ 203 0174 3C040000	        la      $a0, gen_half_2
+     0178 34840000
+ 204 017c 0C0000C2	        jal     print_string
+ 205 0180 02802021	        move    $a0, $s4
+ 206 0184 0C0000C2	        jal     print_string
+ 207 0188 02602021	        move    $a0, $s3
+ 208 018c 02402821	        move    $a1, $s2
+ 209 0190 0C0000A4	        jal     clear_board
+ 210 0194 2210FFFF	        addi    $s0, $s0, -1
+ 211 0198 22B50001	        addi    $s5, $s5, 1
+ 212 019c 1600FFDF	        bne     $s0, $zero, sim_loop
+ 213 01a0               end_sim:
+ 214 01a0                       #########################
+ 215 01a0 8FB20000	        lw      $s2,0($sp) 
+ 216 01a4 8FB10004	        lw	$s1,4($sp)
+ 217 01a8 8FB00008	        lw	$s0,8($sp)
+ 218 01ac 8FBF000C	        lw	$ra,12($sp)	# restore the ra
+ 219 01b0 23BD0010	        addi	$sp,$sp,16	# deallocate stack space
+ 220 01b4 03E00008	        jr $ra
+ 221 01b8               
+ 222 01b8               #
+ 223 01b8               # Name:         set_to_begin
+ 224 01b8               #
+ 225 01b8               # Description:  EXECUTION BEGINS HERE
+ 226 01b8               # Arguments:    $a0 - addr. of gameboard that will be analyzed
+ 227 01b8               #               $a1 - Length of the grid
+ 228 01b8               #               $a2 - Wind direction
+ 229 01b8               #               $a3 - addr. of gameboard with result
+ 230 01b8               # Returns:      $v0 - the solution to the puzzle for this generation
+ 231 01b8               # Destroys:     
+ 232 01b8               #
+ 233 01b8               set_to_begin:
+ 234 01b8 23BDFFE4	        addi	$sp,$sp,-28	# allocate space for the return address
+ 235 01bc AFBF0018	        sw	$ra,24($sp)	# store the ra on the stack
+ 236 01c0 AFB00014	        sw	$s0,20($sp)	# store the ra on the stack
+ 237 01c4 AFB10010	        sw	$s1,16($sp)	# store the ra on the stack
+ 238 01c8 AFB2000C	        sw      $s2,12($sp) 
+ 239 01cc AFB30008	        sw      $s3,8($sp)
+ 240 01d0 AFB40004	        sw      $s4,4($sp)
+ 241 01d4 AFB50000	        sw      $s5,0($sp)
+ 242 01d8               
+ 243 01d8 00808021	        move    $s0, $a0       # addr of gameboards
+ 244 01dc 00A08821	        move    $s1, $a1       # counter for rows
+ 245 01e0 00A0A021	        move    $s4, $a1       
+ 246 01e4 00E09821	        move    $s3, $a3       # addr of gameboard sol.
+ 247 01e8 22280004	        addi    $t0, $s1, 4    # t0 = spaces needed to get to the beginnning of board
+ 248 01ec               
+ 249 01ec 02088020	        add     $s0, $s0, $t0  # s0 = pointer at the beginning of board
+ 250 01f0 02689820	        add     $s3, $s3, $t0  # s0 = pointer at the beginning of board
+ 251 01f4                       
+ 252 01f4               reset_col_counter:
+ 253 01f4 02809021	        move    $s2, $s4
+ 254 01f8               read_cols:
+ 255 01f8 820B0000	        lb      $t3, 0($s0)    # load current character
+ 256 01fc               
+ 257 01fc 02002021	        move    $a0, $s0
+ 258 0200 02602821	        move   $a1, $s3
+ 259 0204                       #li      $v0, 11
+ 260 0204                       #syscall
+ 261 0204 34090074	        li      $t1, TREE
+ 262 0208 340A0042	        li      $t2, BURN
+ 263 020c 34150069	        li      $s5, INDICATOR
+ 264 0210 11690019	        beq     $t3, $t1, tree_fun
+ 265 0214 116A001A	        beq     $t3, $t2, burn_fun
+ 266 0218 1175001B	        beq     $t3, $s5, inidic_fun
+ 267 021c 3409002E	        li      $t1, PERIOD
+ 268 0220 3C040000	        la      $a0, char_error
+     0224 34840000
+ 269 0228 152B0035	        bne     $t1, $t3, print_error
+ 270 022c               done_check:
+ 271 022c                       # check the char here & do logic
+ 272 022c 22100001	        addi    $s0, $s0, 1    # move pointer forward 1 in string
+ 273 0230 22730001	        addi    $s3, $s3, 1    # move pointer forward 1 in sol. gameboard
+ 274 0234               
+ 275 0234 21080001	        addi    $t0, $t0, 1    # update offset
+ 276 0238 2252FFFF	        addi    $s2, $s2, -1   # update col counter
+ 277 023c               
+ 278 023c 1640FFEE	        bne     $s2, $zero, read_cols   # go through each element in this row
+ 279 0240               read_rows:
+ 280 0240 22100003	        addi    $s0, $s0, 3    # move pointer forward 4 in string to get to next row
+ 281 0244 22730003	        addi    $s3, $s3, 3    # move pointer forward 4 in string to get to next row
+ 282 0248               
+ 283 0248 21080003	        addi    $t0, $t0, 3    # update offset
+ 284 024c 2231FFFF	        addi    $s1, $s1, -1   # update row counter
+ 285 0250               
+ 286 0250 1620FFE8	        bne     $s1, $zero, reset_col_counter   # go through each element in this row
+ 287 0254               
+ 288 0254 8FB50000	        lw      $s5,0($sp)
+ 289 0258 8FB40004	        lw      $s4,4($sp)
+ 290 025c 8FB30008	        lw      $s3,8($sp)
+ 291 0260 8FB2000C	        lw      $s2,12($sp) 
+ 292 0264 8FB10010	        lw	$s1,16($sp)
+ 293 0268 8FB00014	        lw	$s0,20($sp)
+ 294 026c 8FBF0018	        lw	$ra,24($sp)	# restore the ra
+ 295 0270 23BD001C	        addi	$sp,$sp,28	# deallocate stack space
+ 296 0274                       
+ 297 0274 03E00008	        jr      $ra
+ 298 0278               
+ 299 0278               tree_fun:
+ 300 0278                       #li      $v0, 11
+ 301 0278                       #syscall
+ 302 0278 0C000000	        jal     tree_case
+ 303 027c 0800008B	        j       done_check
+ 304 0280               burn_fun:
+ 305 0280 0C000000	        jal     burning_case
+ 306 0284 0800008B	        j       done_check
+ 307 0288               inidic_fun:
+ 308 0288 0C000000	        jal     indicator_case
+ 309 028c 0800008B	        j       done_check
+ 310 0290               
+ 311 0290               #
+ 312 0290               # Name:         clear_board
+ 313 0290               #
+ 314 0290               # Description:  EXECUTION BEGINS HERE
+ 315 0290               # Arguments:    $a0 - addr. of gameboard that will be cleared
+ 316 0290               #               $a1 - Length of the grid
+ 317 0290               # Returns:
+ 318 0290               # Destroys:     
+ 319 0290               #
+ 320 0290               clear_board:
+ 321 0290 23BDFFEC	        addi	$sp,$sp,-20	# allocate space for the return address
+ 322 0294 AFBF0010	        sw	$ra,16($sp)	# store the ra on the stack
+ 323 0298 AFB0000C	        sw	$s0,12($sp)	# store the ra on the stack
+ 324 029c AFB10008	        sw	$s1,8($sp)	# store the ra on the stack
+ 325 02a0 AFB20004	        sw      $s2,4($sp) 
+ 326 02a4 AFB30000	        sw      $s3,0($sp) 
+ 327 02a8               
+ 328 02a8 00808021	        move    $s0, $a0
+ 329 02ac 00A08821	        move    $s1, $a1       # counter for rows
+ 330 02b0 20A80004	        addi    $t0, $a1, 4    # t0 = spaces needed to get to the beginnning of board
+ 331 02b4 02088020	        add     $s0, $s0, $t0  # s0 = pointer at the beginning of board
+ 332 02b8 3409002E	        li      $t1, PERIOD
+ 333 02bc                       
+ 334 02bc               reset_clear_counter:
+ 335 02bc 00A09021	        move    $s2, $a1
+ 336 02c0 2252FFFF	        addi    $s2, $s2, -1
+ 337 02c4               clear_cols:
+ 338 02c4 A2090000	        sb      $t1, 0($s0)    # load current character
+ 339 02c8 22100001	        addi    $s0, $s0, 1    # move pointer forward 1 in string
+ 340 02cc 2252FFFF	        addi    $s2, $s2, -1   # update col counter
+ 341 02d0               
+ 342 02d0 1640FFFC	        bne     $s2, $zero, clear_cols   # go through each element in this row
+ 343 02d4 A2090000	        sb      $t1, 0($s0)    # load current character
+ 344 02d8               clear_rows:
+ 345 02d8 22100004	        addi    $s0, $s0, 4    # move pointer forward 4 in string to get to next row
+ 346 02dc               
+ 347 02dc 2231FFFF	        addi    $s1, $s1, -1   # update row counter
+ 348 02e0               
+ 349 02e0 1620FFF6	        bne     $s1, $zero, reset_clear_counter   # go through each element in this row
+ 350 02e4               
+ 351 02e4 8FB30000	        lw      $s3,0($sp)
+ 352 02e8 8FB20004	        lw      $s2,4($sp) 
+ 353 02ec 8FB10008	        lw	$s1,8($sp)
+ 354 02f0 8FB0000C	        lw	$s0,12($sp)
+ 355 02f4 8FBF0010	        lw	$ra,16($sp)	# restore the ra
+ 356 02f8 23BD0014	        addi	$sp,$sp,20	# deallocate stack space
+ 357 02fc                       
+ 358 02fc 03E00008	        jr $ra
+ 359 0300               
+ 360 0300               
+ 361 0300               print_error:
+ 362 0300 0C0000C2	        jal print_string
+ 363 0304 080000C5	        j   exit_prog
+ 364 0308               
+ 365 0308               #
+ 366 0308               # Name:         print_string
+ 367 0308               #
+ 368 0308               # Description:  EXECUTION BEGINS HERE
+ 369 0308               # Arguments:    $a0 - address of the string that will be printed
+ 370 0308               # Returns:      none
+ 371 0308               # Destroys:     
+ 372 0308               #
+ 373 0308               print_string:
+ 374 0308 34020004	        li 	$v0, PRINT_STRING
+ 375 030c 0000000C	        syscall		#print a0
+ 376 0310 03E00008	        jr      $ra
+ 377 0314               
+ 378 0314               exit_prog:
+ 379 0314 3402000A	        li      $v0, 10     # $v0  10= 
+ 380 0318 0000000C	        syscall
+ 381 031c               
+
+
+BURN                 = 00000042   
+EAST                 = 00000045   
+HYPHEN               = 0000002D   
+INDICATOR            = 00000069   
+NEWLINE              = 0000000A   
+NORTH                = 0000004E   
+P1_CHAR              = 00000058   
+P2_CHAR              = 0000004F   
+PERIOD               = 0000002E   
+PIPE                 = 0000007C   
+PLUS_SIGN            = 0000002B   
+PRINT_STRING         = 00000004   
+SOUTH                = 00000053   
+SPACE_CHAR           = 00000020   
+TREE                 = 00000074   
+WEST                 = 00000057   
+burn_fun               00000280 R  text 
+burning_case           ******** XG
+char_error             000000AD RG data 
+clear_board            00000290 R  text 
+clear_cols             000002C4 R  text 
+clear_rows             000002D8 R  text 
+create_board_header    ******** XG
+done_check             0000022C R  text 
+end_sim                000001A0 R  text 
+exit_prog              00000314 R  text 
+game_board             00000133 RG data 
+game_board_cpy         0000025F RG data 
+gen_error              00000068 R  data 
+gen_half_1             00000040 R  data 
+gen_half_2             00000047 R  data 
+gen_header             00000032 RG data 
+grid_error             0000004E R  data 
+indicator_case         ******** XG
+inidic_fun             00000288 R  text 
+input_buffer           000000CF RG data 
+main                   00000000 RG text 
+print_error            00000300 R  text 
+print_string           00000308 R  text 
+read_cols              000001F8 R  text 
+read_rows              00000240 R  text 
+reset_clear_counter    000002BC R  text 
+reset_col_counter      000001F4 R  text 
+set                    00000150 R  text 
+set_to_begin           000001B8 R  text 
+sim_loop               0000011C R  text 
+size                   0000038C RG data 
+skip                   00000140 R  text 
+skip_error             000000BC R  text 
+start_sim              000000F8 R  text 
+tree_case              ******** XG
+tree_fun               00000278 R  text 
+welcome_msg            00000000 R  data 
+wind_error             0000008E R  data 

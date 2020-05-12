@@ -1,0 +1,310 @@
+   1 0000               TREE   = 116
+   2 0000               BURN   = 66
+   3 0000               PERIOD = 46
+   4 0000               EAST   = 69
+   5 0000               WEST   = 87
+   6 0000               NORTH  = 78
+   7 0000               SOUTH  = 83
+   8 0000               INDICATOR = 105
+   9 0000               
+  10 0000                       .globl burning_case
+  11 0000                       .globl tree_case
+  12 0000                       .globl main
+  13 0000                       .globl  game_board
+  14 0000                       .globl  game_board_cpy
+  15 0000                       .globl  create_board_header
+  16 0000                       .globl  input_buffer
+  17 0000                       .globl  gen_header
+  18 0000                       .globl  indicator_case
+  19 0000                       .globl  size
+  20 0000               
+  21 0000               #
+  22 0000               # Name:         burning_case
+  23 0000               #
+  24 0000               # Description:  Analyzes the case where the current char is 'B'.
+  25 0000               #               modifies gameboard_cpy with results of analysis
+  26 0000               # Arguments:    $a0 - addr. of curr. position on board being analyzed
+  27 0000               #               $a1 - addr. of curr. position on board with solution
+  28 0000               #               $a2 - Wind direction (IRRELEVANT MAYBE)
+  29 0000               #               $a3 - offset (IRRELEVANT MAYBE)
+  30 0000               # Returns:      
+  31 0000               # Destroys:     
+  32 0000               #
+  33 0000               burning_case:
+  34 0000 23BDFFE8	        addi	$sp,$sp,-24	# allocate space for the return address
+  35 0004 AFBF0014		sw	$ra,20($sp)	# store the ra on the stack
+  36 0008 AFB00010		sw	$s0,16($sp)	# store the ra on the stack
+  37 000c AFB1000C		sw	$s1,12($sp)	# store the ra on the stack
+  38 0010 AFB20008	        sw      $s2,8($sp) 
+  39 0014 AFB30004	        sw      $s3,4($sp) 
+  40 0018 AFB40000	        sw      $s4,0($sp) 
+  41 001c               
+  42 001c               burning_case_body:
+  43 001c 00808021	        move    $s0, $a0        # addr of analyzed
+  44 0020 00A08821	        move    $s1, $a1        # addr of solution
+  45 0024 00801021	        move    $v0, $a0
+  46 0028 00A01821	        move    $v1, $a1
+  47 002c               
+  48 002c 3408002E	        li      $t0, PERIOD
+  49 0030 A2280000	        sb      $t0, 0($s1)
+  50 0034               
+  51 0034 00806821	        move    $t5, $a0        # addr of analyzed
+  52 0038 00A07021	        move    $t6, $a1        # addr of solution
+  53 003c               
+  54 003c 34120074	        li      $s2, TREE       # Searching for trees to burn down
+  55 0040 34130042	        li      $s3, BURN       # Replacing with burning trees :(
+  56 0044               
+  57 0044 02002021	        move    $a0, $s0
+  58 0048 02202821	        move    $a1, $s1
+  59 004c 02403021	        move    $a2, $s2
+  60 0050 02603821	        move    $a3, $s3
+  61 0054 0C000058	        jal     go_south
+  62 0058               
+  63 0058 01A02021	        move    $a0, $t5
+  64 005c 01C02821	        move    $a1, $t6
+  65 0060 0C000064	        jal     go_north
+  66 0064               
+  67 0064 01A02021	        move    $a0, $t5
+  68 0068 01C02821	        move    $a1, $t6
+  69 006c 0C00007B	        jal     go_west
+  70 0070               
+  71 0070 01A02021	        move    $a0, $t5
+  72 0074 01C02821	        move    $a1, $t6
+  73 0078 0C000073	        jal     go_east
+  74 007c               
+  75 007c                       #################
+  76 007c 34060074	        li      $a2, TREE       # Searching for trees to burn down
+  77 0080 34070069	        li      $a3, INDICATOR       # Replacing with indicator
+  78 0084 01A02021	        move    $a0, $t5
+  79 0088 01A02821	        move    $a1, $t5
+  80 008c 0C000073	        jal     go_east
+  81 0090               
+  82 0090 01A02021	        move    $a0, $t5
+  83 0094 01A02821	        move    $a1, $t5
+  84 0098 0C000058	        jal     go_south
+  85 009c               
+  86 009c               burning_case_end:
+  87 009c 8FB40000	        lw      $s4,0($sp)
+  88 00a0 8FB30004	        lw      $s3,4($sp)
+  89 00a4 8FB20008	        lw      $s2,8($sp) 
+  90 00a8 8FB1000C	        lw	$s1,12($sp)
+  91 00ac 8FB00010		lw	$s0,16($sp)
+  92 00b0 8FBF0014		lw	$ra,20($sp)	# restore the ra
+  93 00b4 23BD0018		addi	$sp,$sp,24	# deallocate stack space
+  94 00b8                       
+  95 00b8 03E00008	        jr $ra
+  96 00bc               
+  97 00bc               
+  98 00bc                       # look in all directions for 't'
+  99 00bc                       #       if 't' found:
+ 100 00bc                       #               mark equivalent pos. in sol board with 'B'
+ 101 00bc                       # finally mark equiv. curr. pos. in sol. board as '.'
+ 102 00bc               
+ 103 00bc               
+ 104 00bc               #
+ 105 00bc               # Name:         tree_case
+ 106 00bc               #
+ 107 00bc               # Description:  Analyzes the case where the current char is 'B'.
+ 108 00bc               #               modifies gameboard_cpy with results of analysis
+ 109 00bc               # Arguments:    $a0 - addr. of curr. position on board being analyzed 
+ 110 00bc               #               $a1 - addr. of curr. position on board with solution
+ 111 00bc               #               $a2 - WIND_DIRECTION
+ 112 00bc               #
+ 113 00bc               # Returns:      
+ 114 00bc               # Destroys:     
+ 115 00bc               #
+ 116 00bc               indicator_case:
+ 117 00bc               tree_case:
+ 118 00bc 23BDFFEC	        addi	$sp,$sp,-20	# allocate space for the return address
+ 119 00c0 AFBF0010		sw	$ra,16($sp)	# store the ra on the stack
+ 120 00c4 AFB0000C		sw	$s0,12($sp)	# store the ra on the stack
+ 121 00c8 AFB10008		sw	$s1,8($sp)	# store the ra on the stack
+ 122 00cc AFB20004	        sw      $s2,4($sp) 
+ 123 00d0 AFB30000	        sw      $s3,0($sp) 
+ 124 00d4               
+ 125 00d4 00808021	        move    $s0, $a0
+ 126 00d8 00A08821	        move    $s1, $a1
+ 127 00dc 00C09021	        move    $s2, $a2
+ 128 00e0               
+ 129 00e0 82080000	        lb      $t0, 0($s0)
+ 130 00e4 34090069	        li      $t1, INDICATOR
+ 131 00e8               
+ 132 00e8 11090003	        beq     $t0, $t1, replace_inidicator
+ 133 00ec 34080074	        li      $t0, TREE
+ 134 00f0 A2280000	        sb      $t0, 0($s1)
+ 135 00f4 08000040	        j       skip_replace
+ 136 00f8               replace_inidicator:
+ 137 00f8 34080042	        li      $t0, BURN
+ 138 00fc A2280000	        sb      $t0, 0($s1)
+ 139 0100               skip_replace:
+ 140 0100                       #move   $a0, $s2
+ 141 0100                       #li     $v0, 11
+ 142 0100                       #syscall
+ 143 0100               
+ 144 0100 34080045	        li      $t0, EAST
+ 145 0104 34090057	        li      $t1, WEST
+ 146 0108 340A0053	        li      $t2, SOUTH
+ 147 010c 340B004E	        li      $t3, NORTH
+ 148 0110               
+ 149 0110 3406002E	        li      $a2, PERIOD
+ 150 0114 34070074	        li      $a3, TREE
+ 151 0118 12480003	        beq     $s2, $t0, east
+ 152 011c 12490004	        beq     $s2, $t1, west
+ 153 0120 124A0004	        beq     $s2, $t2, south
+ 154 0124 124B0005	        beq     $s2, $t3, north
+ 155 0128               east:
+ 156 0128 0C000073	        jal go_east
+ 157 012c 08000051	        j tree_case_end
+ 158 0130               west:
+ 159 0130                       #jal go_west
+ 160 0130 08000051	        j tree_case_end
+ 161 0134               south:
+ 162 0134 0C000058	        jal go_south
+ 163 0138 08000051	        j tree_case_end
+ 164 013c               north:
+ 165 013c 0C000064	        jal go_north
+ 166 0140 08000051	        j tree_case_end
+ 167 0144               tree_case_end:
+ 168 0144 8FB30000	        lw      $s3,0($sp)
+ 169 0148 8FB20004	        lw      $s2,4($sp) 
+ 170 014c 8FB10008	        lw	$s1,8($sp)
+ 171 0150 8FB0000C		lw	$s0,12($sp)
+ 172 0154 8FBF0010		lw	$ra,16($sp)	# restore the ra
+ 173 0158 23BD0014		addi	$sp,$sp,20	# deallocate stack space
+ 174 015c                       
+ 175 015c 03E00008	        jr $ra
+ 176 0160               
+ 177 0160               #
+ 178 0160               # a0 - board being analyzed
+ 179 0160               # a1 - solution board
+ 180 0160               # a2 - character being searched for
+ 181 0160               # a3 - character replacement
+ 182 0160               go_south:
+ 183 0160                       #addi	$sp,$sp,-8	# allocate space for the return address
+ 184 0160               	#sw	$ra,4($sp)	# store the ra on the stack
+ 185 0160               	#sw	$s0,0($sp)	# store the ra on the stack
+ 186 0160 3C080000	        la      $t0, size
+     0164 35080000
+ 187 0168 8D080000	        lw      $t0, 0($t0)
+ 188 016c 21080003	        addi    $t0, $t0, 3
+ 189 0170               
+ 190 0170 00808021	        move    $s0, $a0
+ 191 0174 00A08821	        move    $s1, $a1
+ 192 0178 02088020	        add     $s0, $s0, $t0
+ 193 017c 02288820	        add     $s1, $s1, $t0
+ 194 0180 82080000	        lb      $t0, 0($s0)
+ 195 0184               
+ 196 0184 15060001	        bne     $t0, $a2, go_south_skip # skip putting on sol board if it's not what we're looking for
+ 197 0188 A2270000	        sb      $a3, 0($s1)     # replace on solution board
+ 198 018c               go_south_skip:
+ 199 018c               	#lw	$s0,0($sp)
+ 200 018c               	#lw	$ra,4($sp)	# restore the ra
+ 201 018c               	#addi	$sp,$sp,-8
+ 202 018c 03E00008	        jr      $ra
+ 203 0190               
+ 204 0190               
+ 205 0190               #
+ 206 0190               # a0 - board being analyzed
+ 207 0190               # a1 - solution board
+ 208 0190               # a2 - character being searched for
+ 209 0190               # a3 - character replacement
+ 210 0190               go_north:
+ 211 0190 3C080000	        la      $t0, size
+     0194 35080000
+ 212 0198 8D080000	        lw      $t0, 0($t0)
+ 213 019c               
+ 214 019c 2409FFFF	        li      $t1, -1
+ 215 01a0 01090018	        mul     $t0, $t0, $t1  
+     01a4 00004012
+ 216 01a8 2108FFFD	        addi    $t0, $t0, -3
+ 217 01ac               
+ 218 01ac 00808021	        move    $s0, $a0
+ 219 01b0 00A08821	        move    $s1, $a1
+ 220 01b4 02088020	        add    $s0, $s0, $t0
+ 221 01b8 02288820	        add    $s1, $s1, $t0
+ 222 01bc 82080000	        lb      $t0, 0($s0)
+ 223 01c0               
+ 224 01c0 15060001	        bne     $t0, $a2, go_north_skip # skip putting on sol board if it's not what we're looking for
+ 225 01c4 A2270000	        sb      $a3, 0($s1)     # replace on solution board
+ 226 01c8               go_north_skip:
+ 227 01c8 03E00008	        jr      $ra
+ 228 01cc               
+ 229 01cc               #
+ 230 01cc               # a0 - board being analyzed
+ 231 01cc               # a1 - solution board
+ 232 01cc               # a2 - character being searched for
+ 233 01cc               # a3 - character replacement
+ 234 01cc               go_east:
+ 235 01cc 00808021	        move    $s0, $a0
+ 236 01d0 00A08821	        move    $s1, $a1
+ 237 01d4 22100001	        addi    $s0, $s0, 1
+ 238 01d8 22310001	        addi    $s1, $s1, 1
+ 239 01dc 82080000	        lb      $t0, 0($s0)
+ 240 01e0               
+ 241 01e0 15060001	        bne     $t0, $a2, go_east_skip # skip putting on sol board if it's not what we're looking for
+ 242 01e4 A2270000	        sb      $a3, 0($s1)     # replace on solution board
+ 243 01e8               go_east_skip:
+ 244 01e8               
+ 245 01e8 03E00008	        jr      $ra
+ 246 01ec               
+ 247 01ec               #
+ 248 01ec               # a0 - board being analyzed
+ 249 01ec               # a1 - solution board
+ 250 01ec               # a2 - character being searched for
+ 251 01ec               # a3 - character replacement
+ 252 01ec               go_west:
+ 253 01ec                       # addi	$sp,$sp,-8	# allocate space for the return address
+ 254 01ec               	# sw	$ra,4($sp)	# store the ra on the stack
+ 255 01ec               	# sw	$s0,0($sp)	# store the ra on the stack
+ 256 01ec               
+ 257 01ec 00808021	        move    $s0, $a0
+ 258 01f0 00A08821	        move    $s1, $a1
+ 259 01f4 2210FFFF	        addi    $s0, $s0, -1
+ 260 01f8 2231FFFF	        addi    $s1, $s1, -1
+ 261 01fc 82080000	        lb      $t0, 0($s0)
+ 262 0200               
+ 263 0200 15060001	        bne     $t0, $a2, go_west_skip # skip putting on sol board if it's not what we're looking for
+ 264 0204 A2270000	        sb      $a3, 0($s1)     # replace on solution board
+ 265 0208               go_west_skip:
+ 266 0208               	# lw	$s0,0($sp)
+ 267 0208               	# lw	$ra,4($sp)	# restore the ra
+ 268 0208               	# addi	$sp,$sp,-8
+ 269 0208 03E00008	        jr      $ra
+ 270 020c               
+
+
+BURN                 = 00000042   
+EAST                 = 00000045   
+INDICATOR            = 00000069   
+NORTH                = 0000004E   
+PERIOD               = 0000002E   
+SOUTH                = 00000053   
+TREE                 = 00000074   
+WEST                 = 00000057   
+burning_case           00000000 RG text 
+burning_case_body      0000001C R  text 
+burning_case_end       0000009C R  text 
+create_board_header    ******** XG
+east                   00000128 R  text 
+game_board             ******** XG
+game_board_cpy         ******** XG
+gen_header             ******** XG
+go_east                000001CC R  text 
+go_east_skip           000001E8 R  text 
+go_north               00000190 R  text 
+go_north_skip          000001C8 R  text 
+go_south               00000160 R  text 
+go_south_skip          0000018C R  text 
+go_west                000001EC R  text 
+go_west_skip           00000208 R  text 
+indicator_case         000000BC RG text 
+input_buffer           ******** XG
+main                   ******** XG
+north                  0000013C R  text 
+replace_inidicator     000000F8 R  text 
+size                   ******** XG
+skip_replace           00000100 R  text 
+south                  00000134 R  text 
+tree_case              000000BC RG text 
+tree_case_end          00000144 R  text 
+west                   00000130 R  text 
